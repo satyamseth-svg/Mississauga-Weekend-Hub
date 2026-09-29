@@ -500,6 +500,24 @@
   .empty-state h2 { font-size:20px; font-weight:900; margin-bottom:8px; }
   .empty-state p { color:var(--text-muted); font-weight:600; margin-bottom:18px; }
   #file-input { display:none; }
+  .crew-list { display:flex; flex-direction:column; gap:6px; max-height:46vh; overflow-y:auto; margin-bottom:14px; }
+  .crew-row { text-transform:none; letter-spacing:0; color:var(--text-main); display:flex; align-items:center; gap:10px; padding:8px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg-inner); font-weight:700; font-size:13px; cursor:pointer; }
+  .crew-row input { width:16px; height:16px; accent-color:var(--primary); cursor:pointer; }
+  .crew-row.on { border-color:var(--primary); background:#eff6ff; }
+  body.dark .crew-row.on { background:#0f2036; }
+  .crew-row .cr-meta { margin-left:auto; font-family:'Space Mono',monospace; font-size:11px; color:var(--text-muted); font-weight:700; }
+  .crew-row .cr-sup { font-size:10px; font-weight:800; text-transform:uppercase; color:#0f766e; background:#ccfbf1; border:1px solid #99f6e4; border-radius:20px; padding:2px 8px; }
+  .sum-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .sum-table th { text-align:right; padding:9px 10px; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); border-bottom:2px solid var(--border); }
+  .sum-table th:first-child, .sum-table td:first-child { text-align:left; }
+  .sum-table td { padding:9px 10px; border-bottom:1px solid var(--border); font-weight:700; text-align:right; font-family:'Space Mono',monospace; }
+  .sum-table td:first-child { font-family:'DM Sans',sans-serif; font-weight:800; }
+  .sum-table tr.sup-row td { color:var(--text-muted); }
+  .sum-table tr.tot-row td { border-top:2px solid var(--border); font-weight:900; }
+  .sum-pct { font-weight:900; }
+  .wk-off { opacity:0.45; }
+  .tab-toggle { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; background:rgba(0,0,0,0.08); font-size:11px; font-weight:900; cursor:pointer; flex-shrink:0; }
+  .day-tab.active .tab-toggle { background:rgba(255,255,255,0.25); }
   @media (max-width: 1100px) { .team-wrap { grid-template-columns:1fr; } }
   @media (max-width: 640px) { .card-grid { grid-template-columns:1fr; } #dashboard-output { padding:16px 16px 80px; } .tt-container { width:min(440px,90vw); } }
   @media print {
@@ -544,7 +562,7 @@
   </div>
 
   <div class="day-tabs-wrap no-print" id="report-row" style="display:none">
-    <span class="day-tabs-label">📄 Reports</span>
+    <span class="day-tabs-label">📅 Weeks</span>
     <div class="day-tabs" id="report-tabs"></div>
   </div>
 
@@ -567,6 +585,21 @@
     <div class="modal-body">
       <textarea class="summary-text" id="summary-text" readonly></textarea>
       <div class="copy-row"><button class="action-btn accent" id="copy-btn" onclick="copySummary()" style="flex:1">📑 Copy to Clipboard</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Crew picker (shown when a CSV is added) -->
+<div class="modal-overlay" id="crew-modal" onclick="if(event.target===this)closeModal('crew-modal')">
+  <div class="modal">
+    <div class="modal-head"><h3>👥 Who is weekend crew?</h3><button class="modal-close" onclick="cancelUpload()">&times;</button></div>
+    <div class="modal-body">
+      <div class="hint" id="crew-intro" style="margin-bottom:12px"></div>
+      <div id="crew-list" class="crew-list"></div>
+      <div class="copy-row">
+        <button class="action-btn" onclick="cancelUpload()" style="flex:1">Cancel</button>
+        <button class="action-btn accent" onclick="confirmUpload()" style="flex:2">Add report</button>
+      </div>
     </div>
   </div>
 </div>
@@ -597,7 +630,7 @@
   </div>
 </div>
 
-<script id="wk-data" type="application/json">{"reports": [{"from": "01 Jul 2026", "to": "31 Jul 2026", "csv": "Mississauga,,,,,,,,,,01 Jul 2026,31 Jul 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),40.0,66%,60.7,1:44:00,0:11:00,13:08:00,4,25 Apr 2026\n,,,Packing (M),78.0,81%,95.8,3:50:00,,,,\n,,,Stowing,280.0,57%,491.8,7:34:00,,,,\nSuresh Singh,E,Stower,Picking,577.0,63%,917.0,6:33:00,0:19:00,11:49:00,6,01 Apr 2021\n,,,Stowing,68.0,106%,63.9,0:59:00,,,,\n,,,Scanning,29.0,121%,24.0,0:12:00,,,,\n,,,Move Cancelled Items,166.0,116%,142.9,4:05:00,,,,\nVarinder Khan,M,-,Stowing,175.0,45%,387.8,5:58:00,0:25:00,8:25:00,3,25 Apr 2026\n,,,Docking,151.0,77%,196.0,2:27:00,,,,\nKulwinder Kumar,M,-,Packing (S),44.0,87%,50.8,1:27:00,0:00:00,13:27:00,4,25 Apr 2026\n,,,Packing (M),43.0,70%,61.7,2:28:00,,,,\n,,,Stowing,518.0,84%,619.7,9:32:00,,,,", "file": "WH_Reporting_-_Report.csv"}, {"from": "01 Aug 2026", "to": "31 Aug 2026", "csv": "Mississauga,,,,,,,,,,01 Aug 2026,31 Aug 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),99.0,79%,125.4,3:35:00,0:02:00,16:40:00,5,25 Apr 2026\n,,,Packing (M),122.0,83%,147.5,5:54:00,,,,\n,,,Packing (L),9.0,72%,12.5,0:50:00,,,,\n,,,Picking,70.0,61%,114.3,0:49:00,,,,\n,,,Stowing,185.0,58%,319.6,4:55:00,,,,\n,,,Move Cancelled Items,4.0,19%,21.6,0:37:00,,,,\nSuresh Singh,E,Stower,Picking,905.0,75%,1211.0,8:39:00,0:09:00,9:34:00,9,01 Apr 2021\n,,,Stowing,26.0,44%,59.6,0:55:00,,,,\nVarinder Khan,M,-,Packing (M),12.0,39%,30.4,1:13:00,3:21:00,20:06:00,5,25 Apr 2026\n,,,Stowing,633.0,62%,1020.5,15:42:00,,,,\n,,,Docking,209.0,82%,254.7,3:11:00,,,,\nKulwinder Kumar,M,-,Packing (S),105.0,97%,108.5,3:06:00,0:10:00,25:06:00,5,25 Apr 2026\n,,,Packing (M),181.0,99%,182.1,7:17:00,,,,\n,,,Packing (L),5.0,71%,7.0,0:28:00,,,,\n,,,Stowing,800.0,86%,926.3,14:15:00,,,,", "file": "WH_Reporting_-_Report_1.csv"}, {"from": "31 Aug 2026", "to": "20 Sep 2026", "csv": "Mississauga,,,,,,,,,,31 Aug 2026,20 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),7.0,63%,11.1,0:19:00,0:00:00,18:39:00,3,25 Apr 2026\n,,,Packing (M),232.0,60%,384.6,15:23:00,,,,\n,,,Stowing,137.0,71%,191.8,2:57:00,,,,\nSuresh Singh,E,Stower,Packing (M),5.0,100%,5.0,0:12:00,0:00:00,20:03:00,7,01 Apr 2021\n,,,Packing (L),5.0,51%,9.7,0:39:00,,,,\n,,,Picking,1582.0,64%,2478.0,17:42:00,,,,\n,,,Stowing,79.0,81%,97.5,1:30:00,,,,\nVarinder Khan,M,-,Packing (S),38.0,72%,52.5,1:30:00,4:40:00,25:35:00,4,25 Apr 2026\n,,,Packing (M),244.0,65%,375.4,15:01:00,,,,\n,,,Packing (L),1.0,50%,2.0,0:08:00,,,,\n,,,Stowing,255.0,64%,399.8,6:09:00,,,,\n,,,Docking,257.0,115%,222.7,2:47:00,,,,\nKulwinder Kumar,M,-,Packing (S),49.0,105%,46.7,1:20:00,0:00:00,25:50:00,4,25 Apr 2026\n,,,Packing (M),419.0,97%,430.0,17:12:00,,,,\n,,,Packing (L),36.0,79%,45.5,3:02:00,,,,\n,,,Stowing,243.0,97%,251.3,3:52:00,,,,\n,,,Docking,68.0,212%,32.0,0:24:00,,,,", "file": "sep.csv"}], "savedAt": 1790679678007}</script>
+<script id="wk-data" type="application/json">{"reports": [{"from": "01 Jul 2026", "to": "31 Jul 2026", "csv": "Mississauga,,,,,,,,,,01 Jul 2026,31 Jul 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),40.0,66%,60.7,1:44:00,0:11:00,13:08:00,4,25 Apr 2026\n,,,Packing (M),78.0,81%,95.8,3:50:00,,,,\n,,,Stowing,280.0,57%,491.8,7:34:00,,,,\nSuresh Singh,E,Stower,Picking,577.0,63%,917.0,6:33:00,0:19:00,11:49:00,6,01 Apr 2021\n,,,Stowing,68.0,106%,63.9,0:59:00,,,,\n,,,Scanning,29.0,121%,24.0,0:12:00,,,,\n,,,Move Cancelled Items,166.0,116%,142.9,4:05:00,,,,\nVarinder Khan,M,-,Stowing,175.0,45%,387.8,5:58:00,0:25:00,8:25:00,3,25 Apr 2026\n,,,Docking,151.0,77%,196.0,2:27:00,,,,\nKulwinder Kumar,M,-,Packing (S),44.0,87%,50.8,1:27:00,0:00:00,13:27:00,4,25 Apr 2026\n,,,Packing (M),43.0,70%,61.7,2:28:00,,,,\n,,,Stowing,518.0,84%,619.7,9:32:00,,,,", "file": "f6a262d5-WH_Reporting_-_Report.csv"}, {"from": "01 Aug 2026", "to": "31 Aug 2026", "csv": "Mississauga,,,,,,,,,,01 Aug 2026,31 Aug 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),99.0,79%,125.4,3:35:00,0:02:00,16:40:00,5,25 Apr 2026\n,,,Packing (M),122.0,83%,147.5,5:54:00,,,,\n,,,Packing (L),9.0,72%,12.5,0:50:00,,,,\n,,,Picking,70.0,61%,114.3,0:49:00,,,,\n,,,Stowing,185.0,58%,319.6,4:55:00,,,,\n,,,Move Cancelled Items,4.0,19%,21.6,0:37:00,,,,\nSuresh Singh,E,Stower,Picking,905.0,75%,1211.0,8:39:00,0:09:00,9:34:00,9,01 Apr 2021\n,,,Stowing,26.0,44%,59.6,0:55:00,,,,\nVarinder Khan,M,-,Packing (M),12.0,39%,30.4,1:13:00,3:21:00,20:06:00,5,25 Apr 2026\n,,,Stowing,633.0,62%,1020.5,15:42:00,,,,\n,,,Docking,209.0,82%,254.7,3:11:00,,,,\nKulwinder Kumar,M,-,Packing (S),105.0,97%,108.5,3:06:00,0:10:00,25:06:00,5,25 Apr 2026\n,,,Packing (M),181.0,99%,182.1,7:17:00,,,,\n,,,Packing (L),5.0,71%,7.0,0:28:00,,,,\n,,,Stowing,800.0,86%,926.3,14:15:00,,,,", "file": "8e060dab-WH_Reporting_-_Report_1.csv"}, {"from": "01 Sep 2026", "to": "06 Sep 2026", "csv": "Mississauga,,,,,,,,,,01 Sep 2026,06 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSuresh Singh,E,Stower,Picking,189.0,74%,256.7,1:50:00,0:00:00,1:57:00,2,01 Apr 2021\n,,,Stowing,12.0,158%,7.6,0:07:00,,,,\nVarinder Khan,M,-,Stowing,170.0,78%,216.7,3:20:00,1:22:00,5:25:00,1,25 Apr 2026\n,,,Docking,204.0,122%,166.7,2:05:00,,,,\nKulwinder Kumar,M,-,Packing (S),32.0,95%,33.8,0:58:00,0:00:00,5:35:00,1,25 Apr 2026\n,,,Packing (M),23.0,106%,21.7,0:52:00,,,,\n,,,Packing (L),28.0,118%,23.8,1:35:00,,,,\n,,,Stowing,75.0,65%,114.8,1:46:00,,,,\n,,,Docking,68.0,212%,32.0,0:24:00,,,,", "file": "c90c44e8-WH_Reporting_-_Report_2.csv"}, {"from": "07 Sep 2026", "to": "13 Sep 2026", "csv": "Mississauga,,,,,,,,,,07 Sep 2026,13 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),7.0,63%,11.1,0:19:00,0:00:00,13:17:00,2,25 Apr 2026\n,,,Packing (M),188.0,58%,324.2,12:58:00,,,,\nSuresh Singh,E,Stower,Packing (M),5.0,100%,5.0,0:12:00,0:00:00,14:14:00,3,01 Apr 2021\n,,,Packing (L),5.0,51%,9.7,0:39:00,,,,\n,,,Picking,1171.0,62%,1873.7,13:23:00,,,,\nVarinder Khan,M,-,Packing (S),11.0,65%,16.9,0:29:00,2:12:00,15:12:00,2,25 Apr 2026\n,,,Packing (M),241.0,66%,367.9,14:43:00,,,,\nKulwinder Kumar,M,-,Packing (S),17.0,132%,12.8,0:22:00,0:00:00,17:15:00,2,25 Apr 2026\n,,,Packing (M),396.0,97%,408.3,16:20:00,,,,\n,,,Packing (L),0.0,0%,8.3,0:33:00,,,,", "file": "027b4ee3-WH_Reporting_-_Report_3.csv"}, {"from": "14 Sep 2026", "to": "20 Sep 2026", "csv": "Mississauga,,,,,,,,,,14 Sep 2026,20 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (M),44.0,73%,60.4,2:25:00,0:00:00,5:22:00,1,25 Apr 2026\n,,,Stowing,137.0,71%,191.8,2:57:00,,,,\nSuresh Singh,E,Stower,Picking,222.0,64%,347.7,2:29:00,0:00:00,3:52:00,2,01 Apr 2021\n,,,Stowing,67.0,75%,89.9,1:23:00,,,,\nVarinder Khan,M,-,Packing (S),27.0,76%,35.6,1:01:00,1:06:00,4:58:00,1,25 Apr 2026\n,,,Packing (M),3.0,40%,7.5,0:18:00,,,,\n,,,Packing (L),1.0,50%,2.0,0:08:00,,,,\n,,,Stowing,85.0,46%,183.1,2:49:00,,,,\n,,,Docking,53.0,95%,56.0,0:42:00,,,,\nKulwinder Kumar,M,-,Packing (L),8.0,59%,13.5,0:54:00,0:00:00,3:00:00,1,25 Apr 2026\n,,,Stowing,168.0,123%,136.5,2:06:00,,,,", "file": "e5493900-WH_Reporting_-_Report_4.csv"}, {"from": "21 Sep 2026", "to": "27 Sep 2026", "csv": "Mississauga,,,,,,,,,,21 Sep 2026,27 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSuresh Singh,E,Stower,Packing (S),10.0,48%,21.0,0:36:00,0:02:00,3:21:00,2,01 Apr 2021\n,,,Picking,299.0,78%,382.7,2:44:00,,,,\n,,,Stowing,1.0,92%,1.1,0:01:00,,,,\nDheeraj Mahajan,M,Packer,Packing (M),44.0,81%,54.6,2:11:00,0:00:00,5:43:00,1,25 Apr 2026\n,,,Stowing,213.0,93%,229.7,3:32:00,,,,\nVarinder Khan,M,-,Packing (M),27.0,83%,32.5,1:18:00,2:28:00,4:04:00,1,25 Apr 2026\n,,,Stowing,141.0,78%,179.8,2:46:00,,,,\nKulwinder Kumar,M,-,Packing (S),26.0,99%,26.3,0:45:00,0:00:00,6:08:00,1,25 Apr 2026\n,,,Packing (M),44.0,111%,39.6,1:35:00,,,,\n,,,Stowing,263.0,106%,247.0,3:48:00,,,,", "file": "00666ce2-WH_Reporting_-_Report_5.csv"}], "savedAt": 1790684537163}</script>
 <script>
   // Captured before anything renders, so "Download Dashboard" can bake the
   // current reports back into a clean copy of this same file.
@@ -642,7 +675,7 @@
   function ragHex(p) { const c = cfg(); return p >= c.goodAt ? 'var(--success)' : (p >= c.warnAt ? 'var(--warning)' : 'var(--danger)'); }
   function lsGet() { try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { return null; } }
   function lsSet() { try { localStorage.setItem(LS_KEY, JSON.stringify({ reports: state.reports.map(stripReport), settings: state.settings, savedAt: state.savedAt })); } catch (e) {} }
-  function stripReport(r) { return { from: r.from, to: r.to, csv: r.csv, file: r.file }; }
+  function stripReport(r) { return { from: r.from, to: r.to, csv: r.csv, file: r.file, off: !!r.off }; }
 
   // ─────────────── dates ───────────────
   function parseDate(s) {
@@ -679,12 +712,44 @@
     const by = {};
     reportsSorted().forEach(r => { (by[r.month] = by[r.month] || []).push(r); });
     return Object.keys(by).sort().map(mk => {
-      const byLen = by[mk].slice().sort((a, b) => spanDays(b) - spanDays(a) || a.fromISO.localeCompare(b.fromISO));
-      const used = [], skipped = [];
-      byLen.forEach(r => { if (used.some(u => overlaps(u, r))) skipped.push(r); else used.push(r); });
-      used.sort((a, b) => a.fromISO.localeCompare(b.fromISO));
+      const live = by[mk].filter(r => !r.off);
+      const used = pickNonOverlapping(live);
+      const skipped = by[mk].filter(r => used.indexOf(r) < 0);
       return { mk: mk, label: monthLabel(mk), used: used, skipped: skipped, all: by[mk] };
     });
+  }
+  // Pick the set of reports that covers the most days without counting any day
+  // twice; where two sets cover the same, prefer the one split into more reports
+  // (so three weekly files win over one three-week file).
+  function pickNonOverlapping(list) {
+    const n = list.length;
+    if (n < 2) return list.slice();
+    if (n <= 14) {
+      // pass 1: most days covered; pass 2: among sets within 3 days of that, the
+      // one split into the most reports, so weekly files win over one long file
+      let bestDays = 0;
+      const valid = [];
+      for (let mask = 1; mask < (1 << n); mask++) {
+        const pick = []; let ok = true, days = 0;
+        for (let i = 0; i < n && ok; i++) {
+          if (!(mask & (1 << i))) continue;
+          if (pick.some(p => overlaps(p, list[i]))) { ok = false; break; }
+          pick.push(list[i]); days += spanDays(list[i]);
+        }
+        if (!ok) continue;
+        valid.push({ pick: pick, days: days });
+        if (days > bestDays) bestDays = days;
+      }
+      let best = null;
+      valid.forEach(v => {
+        if (v.days < bestDays - 3) return;
+        if (!best || v.pick.length > best.pick.length || (v.pick.length === best.pick.length && v.days > best.days)) best = v;
+      });
+      return (best ? best.pick : []).sort((a, b) => a.fromISO.localeCompare(b.fromISO));
+    }
+    const out = [];
+    list.slice().sort((a, b) => spanDays(b) - spanDays(a)).forEach(r => { if (!out.some(u => overlaps(u, r))) out.push(r); });
+    return out.sort((a, b) => a.fromISO.localeCompare(b.fromISO));
   }
   function groupFor(mk) { return monthGroups().find(g => g.mk === mk); }
 
@@ -714,13 +779,13 @@
   }
 
   // Keep only the header + the blocks for the supervisor and weekend roster.
-  function filterReport(text, fname) {
+  function filterReport(text, fname, wantNames) {
     const lines = csvLines(text).filter(r => r.join('').trim() !== '');
     const hIdx = lines.findIndex(r => r.some(h => (h || '').trim().toLowerCase() === 'name'));
     if (hIdx < 0) throw new Error('Could not find the "Name" header row in this CSV.');
     const period = detectPeriod(lines, fname);
     if (!period) throw new Error('Could not work out which dates this report covers.');
-    const want = new Set([norm(cfg().sup)].concat(cfg().roster.map(norm)));
+    const want = new Set((wantNames || [cfg().sup].concat(cfg().roster)).map(norm));
     const keep = lines.slice(0, hIdx + 1);
     let cur = false; const found = [];
     for (let j = hIdx + 1; j < lines.length; j++) {
@@ -751,6 +816,24 @@
     }
     return people;
   }
+  // Every associate in a raw report, for the crew picker
+  function namesInReport(text) {
+    const lines = csvLines(text).filter(r => r.join('').trim() !== '');
+    const hIdx = lines.findIndex(r => r.some(h => (h || '').trim().toLowerCase() === 'name'));
+    if (hIdx < 0) return [];
+    const H = lines[hIdx].map(h => (h || '').trim().toLowerCase());
+    const ci = { name: H.indexOf('name'), shift: H.indexOf('shift'), role: H.indexOf('role'), days: H.indexOf('working days'), it: H.indexOf('total it hours') };
+    const out = [];
+    for (let j = hIdx + 1; j < lines.length; j++) {
+      const nm = (lines[j][ci.name] || '').trim();
+      if (!nm) continue;
+      if (/^newhire/i.test(nm) || nm.indexOf('@') >= 0) continue;   // trial placeholders
+      out.push({ name: nm.replace(/_/g, ' '), shift: ci.shift >= 0 ? lines[j][ci.shift] : '', role: ci.role >= 0 ? lines[j][ci.role] : '',
+                 days: ci.days >= 0 ? (parseInt(lines[j][ci.days]) || 0) : 0, it: ci.it >= 0 ? (lines[j][ci.it] || '') : '' });
+    }
+    return out;
+  }
+
   function reportPeople(r) { if (!r._people) r._people = parseReport(r.csv); return r._people; }
 
   // Merge several reports into one set of people (sums units, benchmark, hours, days)
@@ -865,36 +948,6 @@
     return st;
   }
 
-  // Trend series: month rollups if we're on a month/all tab, otherwise the reports themselves
-  function timeline() {
-    if (activeKey && activeKey.slice(0, 2) === 'R:') return reportsSorted().map(r => ({ label: r.label, reports: [r] }));
-    return monthGroups().map(g => ({ label: g.label, reports: g.used }));
-  }
-  function seriesFor(name) {
-    const isSup = norm(name) === norm(cfg().sup);
-    const out = [];
-    timeline().forEach(step => {
-      const ppl = mergePeople(step.reports); const p = ppl[norm(name)];
-      if (p) { const a = computePerson(p, isSup); out.push({ label: step.label, pct: a.overallPct, itPct: a.itPct, itPerDay: a.itPerDay, days: a.days }); }
-    });
-    return out;
-  }
-  function sparkSVG(series) {
-    const vals = series.map(s => s.pct);
-    const W = 64, H = 20, pad = 2, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
-    const pts = vals.map((v, i) => [pad + i * (W - 2 * pad) / (vals.length - 1), H - pad - (v - mn) / rg * (H - 2 * pad)]);
-    const last = vals[vals.length - 1];
-    return '<svg class="spark-svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><polyline fill="none" stroke="' + ragHex(last) + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' +
-      pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') + '"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.5" fill="' + ragHex(last) + '"/></svg>';
-  }
-  function trendHTML(series) {
-    if (series.length < 2) return '';
-    const d = Math.round(series[series.length - 1].pct - series[series.length - 2].pct);
-    const cls = d > 2 ? 'trend-up' : d < -2 ? 'trend-down' : 'trend-flat';
-    const arrow = d > 2 ? '▲' : d < -2 ? '▼' : '■';
-    return '<span class="trend-arrow ' + cls + '" title="vs ' + esc(series[series.length - 2].label) + '">' + arrow + ' ' + (d > 0 ? '+' : '') + d + ' pts</span>';
-  }
-
   // ─────────────── Rendering ───────────────
   function buildCalcHTML(a) {
     const s = cfg();
@@ -965,12 +1018,8 @@
     if (a.nonITHrs > 0) ttRows += '<div class="tt-nonit-box"><div class="tt-nonit-header"><span>Non-IT Hours</span><span class="tt-nonit-total">' + fmtH(a.nonITHrs) + '</span></div></div>';
     ttRows += buildCalcHTML(a);
 
-    const series = seriesFor(a.name);
-    const spark = series.length >= 2 ? '<div class="spark-wrap" title="Overall % over time">' + sparkSVG(series) + trendHTML(series) + '</div>' : '';
     let badges = '';
     if (a.name === topName && a.overallPct > 0) badges += '<span class="cbadge top">🏆 Top</span>';
-    const lowN = series.filter(s => s.pct < cfg().warnAt).length;
-    if (lowN >= 2) badges += '<span class="cbadge repeat">⚠ Below ' + cfg().warnAt + '% ×' + lowN + '</span>';
 
     const chips = '<div class="days-chip"><span>' + a.days + ' day' + (a.days === 1 ? '' : 's') + ' worked</span><span>' + a.itPerDay.toFixed(1) + 'h IT / day</span><span>' + rn(a.unitsPerDay) + ' units / day</span>' +
                   (a.reports > 1 ? '<span>' + a.reports + ' reports</span>' : '') + '</div>';
@@ -993,7 +1042,7 @@
         (a.isSup ? '<div class="info-row"><span>Team totals:</span> <span>Not included (supervisor)</span></div>' : '') +
       '</div>' + ttRows + '</div>' +
       '<div class="name"><span>' + esc(a.name) + '</span><span class="name-role">' + esc(a.role) + '</span></div>' +
-      spark + (badges ? '<div class="card-badges">' + badges + '</div>' : '') + chips + pHtml + overallBoxHTML(a) + bar + '</div>';
+      (badges ? '<div class="card-badges">' + badges + '</div>' : '') + chips + pHtml + overallBoxHTML(a) + bar + '</div>';
   }
 
   function teamBlockHTML(st, label) {
@@ -1014,29 +1063,42 @@
       '<div class="it-label"><span>' + rn(st.itD) + 'h IT' + (st.nonIT > 0 ? ' + ' + fmtH(st.nonIT) + ' Non-IT' : '') + ' completed</span><span>Goal: ' + rn(st.itB) + 'h</span></div></div></div>';
   }
 
-  // Month-over-month table (always by month rollup, whatever tab is open)
-  function momTableHTML() {
-    const gs = monthGroups(); const c = cfg();
-    if (!gs.length) return '';
-    const names = [c.sup].concat(c.roster);
-    const head = '<tr><th>Associate</th>' + gs.map(g => '<th>' + esc(g.label) + '<span class="mom-sub">' + g.used.length + ' report' + (g.used.length === 1 ? '' : 's') + '</span></th>').join('') + '</tr>';
+  // Everyone at a glance for whatever tab is open
+  function summaryTableHTML(view, st) {
+    const rows = (view.sup ? [view.sup] : []).concat(view.list).map(a => {
+      if (a.absent) return '<tr><td>' + esc(a.name) + '</td><td colspan="5" style="text-align:left;color:var(--text-muted);font-family:\'DM Sans\',sans-serif">No hours in this period</td></tr>';
+      return '<tr' + (a.isSup ? ' class="sup-row"' : '') + '><td>' + esc(a.name) + (a.isSup ? ' <span class="mom-sub" style="display:inline">(Sup)</span>' : '') + '</td>' +
+        '<td>' + a.days + '</td><td>' + a.itPerDay.toFixed(1) + 'h</td>' +
+        '<td class="' + colorClass(a.itPct) + '">' + Math.round(a.itPct) + '%</td>' +
+        '<td>' + rn(a.tAct) + '</td>' +
+        '<td class="sum-pct ' + colorClass(a.overallPct) + '">' + Math.round(a.overallPct) + '%</td></tr>';
+    }).join('');
+    const tot = '<tr class="tot-row"><td>Team (excl. supervisor)</td><td>' + st.days + '</td><td>' + (st.days > 0 ? (st.itD / st.days).toFixed(1) : '0.0') + 'h</td>' +
+      '<td class="' + colorClass(st.itPct) + '">' + Math.round(st.itPct) + '%</td><td>' + rn(st.act) + '</td>' +
+      '<td class="sum-pct ' + colorClass(st.overall) + '">' + Math.round(st.overall) + '%</td></tr>';
+    return '<table class="sum-table"><thead><tr><th>Associate</th><th>Days</th><th>IT / day</th><th>IT %</th><th>Units</th><th>Overall</th></tr></thead><tbody>' + rows + tot + '</tbody></table>';
+  }
+
+  // Week-by-week split of the month in view (only when that month has more than one report)
+  function weekTableHTML(mk) {
+    const g = groupFor(mk); if (!g || g.used.length < 2) return '';
+    const c = cfg(); const names = [c.sup].concat(c.roster);
+    const head = '<tr><th>Associate</th>' + g.used.map(r => '<th>' + esc(r.label) + '<span class="mom-sub">' + esc(r.range) + '</span></th>').join('') + '<th>' + esc(g.label) + '</th></tr>';
     let body = '';
     names.forEach((n, idx) => {
-      let prev = null;
-      body += '<tr><td>' + esc(n) + (idx === 0 ? ' <span class="mom-sub" style="display:inline">(Sup)</span>' : '') + '</td>' + gs.map(g => {
-        const p = mergePeople(g.used)[norm(n)];
-        if (!p) { prev = null; return '<td><span class="mom-sub">—</span></td>'; }
+      const cells = g.used.map(r => {
+        const p = reportPeople(r)[norm(n)];
+        if (!p) return '<td><span class="mom-sub">—</span></td>';
         const a = computePerson(p, idx === 0);
-        const d = prev != null ? Math.round(a.overallPct - prev) : null; prev = a.overallPct;
-        const dH = d == null ? '' : '<span class="mom-delta ' + (d > 2 ? 'trend-up' : d < -2 ? 'trend-down' : 'trend-flat') + '">' + (d > 0 ? '+' : '') + d + '</span>';
-        return '<td><span class="mom-pct ' + colorClass(a.overallPct) + '">' + Math.round(a.overallPct) + '%</span>' + dH +
-               '<span class="mom-sub">' + a.days + 'd · ' + a.itPerDay.toFixed(1) + 'h IT/day · IT ' + Math.round(a.itPct) + '%</span></td>';
-      }).join('') + '</tr>';
+        return '<td><span class="mom-pct ' + colorClass(a.overallPct) + '">' + Math.round(a.overallPct) + '%</span><span class="mom-sub">' + a.days + 'd · ' + rn(a.tAct) + ' units · IT ' + Math.round(a.itPct) + '%</span></td>';
+      }).join('');
+      const mp = mergePeople(g.used)[norm(n)];
+      const tot = mp ? (function () { const a = computePerson(mp, idx === 0); return '<td><span class="mom-pct ' + colorClass(a.overallPct) + '">' + Math.round(a.overallPct) + '%</span><span class="mom-sub">' + a.days + 'd · IT ' + Math.round(a.itPct) + '%</span></td>'; })() : '<td><span class="mom-sub">—</span></td>';
+      body += '<tr><td>' + esc(n) + (idx === 0 ? ' <span class="mom-sub" style="display:inline">(Sup)</span>' : '') + '</td>' + cells + tot + '</tr>';
     });
-    body += '<tr class="team-row"><td>Team (excl. supervisor)</td>' + gs.map(g => {
-      const st = teamStats(buildView('M:' + g.mk).list);
-      return '<td><span class="mom-pct ' + colorClass(st.overall) + '">' + Math.round(st.overall) + '%</span><span class="mom-sub">' + st.days + ' person-days · IT ' + Math.round(st.itPct) + '%</span></td>';
-    }).join('') + '</tr>';
+    const teamCells = g.used.map(r => { const st = teamStats(buildView('R:' + r.key).list); return '<td><span class="mom-pct ' + colorClass(st.overall) + '">' + Math.round(st.overall) + '%</span><span class="mom-sub">' + st.days + ' person-days</span></td>'; }).join('');
+    const mSt = teamStats(buildView('M:' + mk).list);
+    body += '<tr class="team-row"><td>Team (excl. supervisor)</td>' + teamCells + '<td><span class="mom-pct ' + colorClass(mSt.overall) + '">' + Math.round(mSt.overall) + '%</span><span class="mom-sub">' + mSt.days + ' person-days</span></td></tr>';
     return '<table class="mom-table"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
   }
 
@@ -1050,21 +1112,25 @@
     if (gs.length > 1) h += '<button class="day-tab month-tab-all' + (activeKey === 'ALL' ? ' active' : '') + '" onclick="switchTo(\'ALL\')">📊 All</button>';
     document.getElementById('month-tabs').innerHTML = h;
 
-    // Second row: the individual uploaded reports for the month in view
+    // Second row: the weekly / individual reports inside the month in view
     const rs = reportsSorted();
     let mk = null;
     if (activeKey && activeKey.slice(0, 2) === 'M:') mk = activeKey.slice(2);
     else if (activeKey && activeKey.slice(0, 2) === 'R:') { const r = state.reports.find(x => x.key === activeKey.slice(2)); mk = r ? r.month : null; }
     const row = document.getElementById('report-row');
-    const shown = mk ? rs.filter(r => r.month === mk) : rs;
-    if (activeKey === 'ALL' || shown.length < 2) { row.style.display = 'none'; document.getElementById('report-tabs').innerHTML = ''; return; }
+    const shown = mk ? rs.filter(r => r.month === mk) : [];
+    if (!shown.length) { row.style.display = 'none'; document.getElementById('report-tabs').innerHTML = ''; return; }
     row.style.display = 'flex';
     const g = mk ? groupFor(mk) : null;
     document.getElementById('report-tabs').innerHTML = shown.map(r => {
       const st = teamStats(buildView('R:' + r.key).list);
-      const dup = g && g.skipped.indexOf(r) >= 0;
-      return '<button class="day-tab' + (activeKey === 'R:' + r.key ? ' active' : '') + '" title="' + esc(r.range) + (dup ? ' — overlaps a longer report, so it is left out of the month total' : '') + '" onclick="switchTo(\'R:' + r.key + '\')">' +
-        esc(r.label) + (dup ? ' ⓘ' : '') + '<span class="day-tab-sub">' + Math.round(st.overall) + '%</span>' +
+      const counted = g && g.used.indexOf(r) >= 0;
+      const why = r.off ? 'Not counted in the month total — click ∅ to put it back'
+                        : counted ? 'Counted in the ' + (g ? g.label : 'month') + ' total'
+                                  : 'Overlaps another report, so it is not counted in the month total';
+      return '<button class="day-tab' + (activeKey === 'R:' + r.key ? ' active' : '') + (counted ? '' : ' wk-off') + '" title="' + esc(r.range + ' — ' + why) + '" onclick="switchTo(\'R:' + r.key + '\')">' +
+        '<span class="tab-toggle" title="' + (r.off ? 'Include in month total' : 'Leave out of month total') + '" onclick="event.stopPropagation();toggleReport(\'' + r.key + '\')">' + (counted ? '✓' : '∅') + '</span>' +
+        esc(r.label) + '<span class="day-tab-sub">' + Math.round(st.overall) + '%</span>' +
         '<span class="day-tab-remove tab-x" title="Remove this report" onclick="event.stopPropagation();removeReport(\'' + r.key + '\')">×</span></button>';
     }).join('');
   }
@@ -1105,8 +1171,10 @@
       '<div class="global-metric"><div class="lbl">Avg IT / Day</div><div class="val" style="color:' + ragHex(avgItDay / c.itGoal * 100) + '">' + avgItDay.toFixed(1) + 'h</div><div class="sub">goal ' + c.itGoal + 'h</div></div>' +
       '<div class="global-metric"><div class="lbl">Days Worked</div><div class="val">' + st.days + '</div><div class="sub">' + st.count + ' of ' + view.list.length + ' associates</div></div>';
 
-    document.getElementById('insights').innerHTML = gs.length ?
-      '<div class="panel"><div class="panel-head" onclick="this.parentNode.classList.toggle(\'collapsed\')"><h3>📈 Month-over-Month</h3><span class="chev">▼</span></div><div class="panel-body" style="overflow-x:auto">' + momTableHTML() + '</div></div>' : '';
+    let panels = '<div class="panel"><div class="panel-head" onclick="this.parentNode.classList.toggle(\'collapsed\')"><h3>📋 All Weekend Associates — ' + esc(title) + '</h3><span class="chev">▼</span></div><div class="panel-body" style="overflow-x:auto">' + summaryTableHTML(view, st) + '</div></div>';
+    const wk = activeKey.slice(0, 2) === 'M:' ? weekTableHTML(activeKey.slice(2)) : '';
+    if (wk) panels += '<div class="panel"><div class="panel-head" onclick="this.parentNode.classList.toggle(\'collapsed\')"><h3>🗓 Week by Week — ' + esc(title) + '</h3><span class="chev">▼</span></div><div class="panel-body" style="overflow-x:auto">' + wk + '</div></div>';
+    document.getElementById('insights').innerHTML = panels;
 
     const q = (document.getElementById('search-input').value || '').toLowerCase();
     const sort = document.getElementById('sort-select').value;
@@ -1131,6 +1199,10 @@
   }
 
   function switchTo(k) { activeKey = k; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function toggleReport(k) {
+    const r = state.reports.find(x => x.key === k); if (!r) return;
+    r.off = !r.off; save(); render();
+  }
   let lastRemoved = null;
   function removeReport(k) {
     const r = state.reports.find(x => x.key === k); if (!r) return;
@@ -1145,29 +1217,68 @@
   function hideDQ() { document.getElementById('dq-bar').style.display = 'none'; }
   function save() { state.savedAt = Date.now(); lsSet(); }
 
+  let pending = null;   // { text, fname }
+
   function handleUpload(ev) {
     const f = ev.target.files && ev.target.files[0]; if (!f) return;
     const rd = new FileReader();
     rd.onload = e => {
-      try {
-        const res = filterReport(e.target.result, f.name);
-        const rep = normalizeReport({ from: res.period.from, to: res.period.to, csv: res.csv, file: f.name });
-        const existed = state.reports.some(x => x.key === rep.key);
-        state.reports = state.reports.filter(x => x.key !== rep.key);
-        state.reports.push(rep);
-        activeKey = 'R:' + rep.key; save(); render();
-        const c = cfg(); const foundN = new Set(res.found.map(norm));
-        const missing = [c.sup].concat(c.roster).filter(n => !foundN.has(norm(n)));
-        const g = groupFor(rep.month);
-        const dup = g && g.skipped.indexOf(rep) >= 0;
-        showDQ((existed ? 'Replaced ' : 'Added ') + esc(rep.label) + ' (' + esc(rep.range) + ') — ' + res.found.length + ' of ' + (c.roster.length + 1) + ' weekend names found.' +
-               (missing.length ? ' Not on report: ' + esc(missing.join(', ')) + '.' : '') +
-               (dup ? ' It overlaps a longer report for ' + esc(g.label) + ', so the month total still uses the longer one.' : '') +
-               ' Use ⬇ Download Dashboard to save a copy with this report built in.', missing.length > 0 || dup);
-      } catch (err) { showDQ('Could not read ' + esc(f.name) + ': ' + esc(err.message), true); }
       ev.target.value = '';
+      try {
+        const all = namesInReport(e.target.result);
+        if (!all.length) throw new Error('no associate rows found');
+        pending = { text: e.target.result, fname: f.name };
+        openCrewPicker(all, f.name);
+      } catch (err) { showDQ('Could not read ' + esc(f.name) + ': ' + esc(err.message), true); }
     };
     rd.readAsText(f);
+  }
+
+  function openCrewPicker(all, fname) {
+    const c = cfg();
+    const known = new Set([norm(c.sup)].concat(c.roster.map(norm)));
+    const sorted = all.slice().sort((a, b) => (known.has(norm(b.name)) ? 1 : 0) - (known.has(norm(a.name)) ? 1 : 0) || a.name.localeCompare(b.name));
+    document.getElementById('crew-intro').innerHTML = 'Tick everyone who works the weekend shift in <b>' + esc(fname) + '</b>. ' +
+      'Already-known names are ticked. Only ticked names are kept — nobody else from the report is stored in this dashboard.';
+    document.getElementById('crew-list').innerHTML = sorted.map((p, i) => {
+      const on = known.has(norm(p.name));
+      const isSup = norm(p.name) === norm(c.sup);
+      return '<label class="crew-row' + (on ? ' on' : '') + '" id="crew-row-' + i + '">' +
+        '<input type="checkbox" ' + (on ? 'checked' : '') + ' value="' + esc(p.name) + '" onchange="this.closest(\'.crew-row\').classList.toggle(\'on\', this.checked)">' +
+        '<span>' + esc(p.name) + '</span>' + (isSup ? '<span class="cr-sup">Supervisor</span>' : '') +
+        '<span class="cr-meta">' + esc((p.shift || '—')) + ' · ' + p.days + 'd · ' + esc(p.it || '0:00') + '</span></label>';
+    }).join('');
+    document.getElementById('crew-modal').classList.add('show');
+  }
+  function cancelUpload() { pending = null; closeModal('crew-modal'); }
+
+  function confirmUpload() {
+    if (!pending) { closeModal('crew-modal'); return; }
+    const picked = Array.prototype.slice.call(document.querySelectorAll('#crew-list input:checked')).map(i => i.value);
+    if (!picked.length) { showDQ('Nothing was ticked, so no report was added.', true); cancelUpload(); return; }
+    const c = cfg();
+    const supIn = picked.some(n => norm(n) === norm(c.sup));
+    // Keep crew members who simply aren't in this file (they show as "No Data"),
+    // drop only the ones that were in the file and left unticked.
+    const inFile = new Set(namesInReport(pending.text).map(p => norm(p.name)));
+    const kept = c.roster.filter(n => !inFile.has(norm(n)));
+    const added = picked.filter(n => norm(n) !== norm(c.sup) && !kept.some(k => norm(k) === norm(n)));
+    state.settings.roster = kept.concat(added);
+    try {
+      const res = filterReport(pending.text, pending.fname, picked);
+      const rep = normalizeReport({ from: res.period.from, to: res.period.to, csv: res.csv, file: pending.fname });
+      const existed = state.reports.some(x => x.key === rep.key);
+      state.reports = state.reports.filter(x => x.key !== rep.key);
+      state.reports.push(rep);
+      activeKey = 'R:' + rep.key; save(); closeModal('crew-modal'); render();
+      const g = groupFor(rep.month);
+      const counted = g && g.used.indexOf(rep) >= 0;
+      showDQ((existed ? 'Replaced ' : 'Added ') + esc(rep.label) + ' (' + esc(rep.range) + ') with ' + picked.length + ' name' + (picked.length === 1 ? '' : 's') + '.' +
+             (supIn ? '' : ' ' + esc(c.sup) + ' was not ticked, so the supervisor card is empty.') +
+             (counted ? '' : ' It overlaps another report, so it is not counted in the ' + esc(g ? g.label : 'month') + ' total — use the ∅ button on its tab to swap which one counts.') +
+             ' Use ⬇ Download Dashboard to save a copy with this report built in.', !counted);
+    } catch (err) { showDQ('Could not add ' + esc(pending.fname) + ': ' + esc(err.message), true); closeModal('crew-modal'); }
+    pending = null;
   }
 
   // ─────────────── Settings ───────────────
@@ -1262,7 +1373,7 @@
     let th = 'light'; try { th = localStorage.getItem('wh_theme') || 'light'; } catch (e) {}
     applyTheme(th);
     render();
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('summary-modal'); closeModal('settings-modal'); } });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('summary-modal'); closeModal('settings-modal'); cancelUpload(); } });
   })();
 </script>
 </body>
