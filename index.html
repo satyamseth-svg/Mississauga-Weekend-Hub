@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mississauga Weekend Crew — Monthly Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2563eb; --primary-dark: #1d4ed8; 
+    --success: #059669; --warning: #d97706; --danger: #dc2626;
+    --bg-main: #f1f5f9; --bg-card: #ffffff; --bg-inner: #f8fafc;
+    --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
+    --sup-morning: #e0f2fe; --sup-evening: #fef3c7; --sup-night: #e0e7ff;   
+    --sup-morning-border: #bae6fd; --sup-evening-border: #fde68a; --sup-night-border: #c7d2fe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Setup Page */
+  #setup-page { display: flex; flex-direction: column; align-items: center; padding: 40px 20px; max-width: 800px; margin: 0 auto; }
+  .setup-card { background: var(--bg-card); border-radius: 24px; padding: 40px; width: 100%; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+  h1 { font-size: 24px; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--text-main); }
+  
+  .input-group { margin-bottom: 25px; width: 100%; }
+  label { display: block; font-weight: 800; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  input[type="date"], input[type="text"], input[type="number"], textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px; background: #fff; color: var(--text-main); font-family: 'Space Mono', monospace; font-size: 14px; transition: border-color 0.2s; }
+  textarea { height: 100px; resize: vertical; font-size: 12px; }
+  textarea:focus, input:focus { outline: none; border-color: var(--primary); }
+  
+  /* Drag and Drop File Inputs */
+  .file-drop-area { border: 2px dashed var(--border); border-radius: 12px; padding: 25px 20px; text-align: center; cursor: pointer; background: var(--bg-inner); transition: all 0.2s; margin-bottom: 15px; position: relative; }
+  .file-drop-area:hover { border-color: var(--primary); background: #eff6ff; }
+  .file-drop-area input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .file-label { font-weight: 800; font-size: 15px; color: var(--primary); pointer-events: none; }
+  .file-sub { font-size: 12px; color: var(--text-muted); margin-top: 5px; pointer-events: none; }
+  
+  /* Settings Accordion */
+  .settings-panel { margin-bottom: 25px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg-inner); overflow: hidden; }
+  .settings-panel summary { padding: 16px; font-weight: 800; cursor: pointer; background: #fff; outline: none; user-select: none; color: var(--text-main); }
+  .settings-panel summary:hover { background: #f8fafc; }
+  .settings-content { padding: 20px; border-top: 1px solid var(--border); }
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+  
+  button.primary-btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); margin-top: 10px; }
+  button.primary-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+  button.secondary-btn { width: 100%; padding: 12px; background: #fff; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 20px; transition: all 0.2s; display: none; }
+  button.secondary-btn:hover { background: #eff6ff; }
+
+  /* Dashboard Styles */
+  #dashboard-output { display: none; padding: 20px 20px 100px 20px; min-height: 100vh; }
+  
+  /* Top Control Bar */
+  .control-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1800px; margin: 0 auto 20px auto; background: #fff; padding: 15px 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  .controls-left { display: flex; gap: 15px; align-items: center; flex: 1; }
+  .controls-right { display: flex; gap: 10px; }
+  
+  .search-box { flex: 1; max-width: 300px; position: relative; }
+  .search-box input { width: 100%; padding: 10px 15px; border-radius: 8px; border: 2px solid var(--border); font-family: 'DM Sans', sans-serif; font-weight: 600; }
+  .sort-box select { padding: 10px 15px; border-radius: 8px; border: 2px solid var(--border); font-family: 'DM Sans', sans-serif; font-weight: 700; color: var(--text-main); background: #fff; cursor: pointer;}
+  
+  .action-btn { background: var(--bg-card); border: 2px solid var(--border); padding: 10px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; color: var(--text-main); transition: all 0.2s; }
+  .action-btn:hover { background: var(--bg-inner); border-color: var(--primary); color: var(--primary); }
+  .action-btn.accent { background: var(--primary); border-color: var(--primary); color: white; }
+  .action-btn.accent:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+  .action-btn.download { background: #059669; border-color: #059669; color: white; }
+  .action-btn.download:hover { background: #047857; border-color: #047857; color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+
+  /* Day Switcher Tabs */
+  .day-tabs-wrap { max-width: 1800px; margin: 0 auto 18px auto; display: flex; align-items: center; gap: 14px; background: #fff; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  .day-tabs-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); white-space: nowrap; }
+  .day-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; flex: 1; scrollbar-width: thin; }
+  .day-tabs::-webkit-scrollbar { height: 6px; }
+  .day-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  .day-tab { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px 8px 14px; border-radius: 10px; border: 2px solid var(--border); background: #fff; color: var(--text-muted); font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; font-family: 'DM Sans', sans-serif; }
+  .day-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .day-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+  .day-tab .day-tab-sub { font-size: 10px; font-weight: 700; opacity: 0.85; font-family: 'Space Mono', monospace; }
+  .day-tab-remove { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.08); color: inherit; font-size: 14px; font-weight: 900; line-height: 1; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+  .day-tab.active .day-tab-remove { background: rgba(255,255,255,0.25); }
+  .day-tab-remove:hover { background: var(--danger); color: #fff; }
+  .day-add-tab { padding: 8px 16px; border-radius: 10px; border: 2px dashed var(--border); background: var(--bg-inner); color: var(--primary); font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+  .day-add-tab:hover { border-color: var(--primary); background: #eff6ff; }
+
+  /* Archive controls */
+  .day-tab-archive { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:6px; background:rgba(0,0,0,0.07); color:inherit; font-size:11px; line-height:1; cursor:pointer; flex-shrink:0; transition:all 0.15s; }
+  .day-tab.active .day-tab-archive { background:rgba(255,255,255,0.22); }
+  .day-tab-archive:hover { background:var(--primary); color:#fff; }
+  .day-archive-btn { padding:8px 14px; border-radius:10px; border:2px solid var(--border); background:var(--bg-inner); color:var(--text-main); font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.15s; flex-shrink:0; align-items:center; gap:6px; }
+  .day-archive-btn:hover { border-color:var(--primary); color:var(--primary); }
+  .arch-count-badge { background:var(--primary); color:#fff; border-radius:20px; padding:1px 8px; font-size:11px; font-weight:800; font-family:'Space Mono',monospace; }
+  .archived-banner { max-width:1800px; margin:0 auto 14px auto; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px; padding:10px 16px; font-size:13px; font-weight:700; display:none; align-items:center; gap:12px; }
+  body.dark .archived-banner { background:#2a1c0e; border-color:#7c5310; color:#fbbf24; }
+  .arch-inline-restore { background:#ea580c; color:#fff; border:none; border-radius:8px; padding:6px 12px; font-weight:800; cursor:pointer; font-size:12px; }
+  .arch-inline-restore:hover { background:#c2410c; }
+  .arch-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; background:var(--bg-inner); flex-wrap:wrap; }
+  .arch-info { display:flex; flex-direction:column; gap:2px; }
+  .arch-date { font-weight:900; font-size:14px; color:var(--text-main); }
+  .arch-meta { font-size:11px; color:var(--text-muted); font-weight:700; font-family:'Space Mono',monospace; }
+  .arch-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .arch-btn { border:2px solid var(--border); background:var(--bg-card); color:var(--text-main); border-radius:9px; padding:7px 12px; font-weight:800; font-size:12px; cursor:pointer; transition:all 0.15s; }
+  .arch-btn.restore:hover { border-color:var(--success); color:var(--success); }
+  .arch-btn.view:hover { border-color:var(--primary); color:var(--primary); }
+  .arch-btn.del:hover { border-color:var(--danger); color:var(--danger); }
+
+  .header { text-align: center; margin-bottom: 20px; font-weight: 900; font-size: 28px; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
+  
+  /* Global Summary Tabs */
+  .global-tabs-container { display: flex; flex-direction: column; gap: 15px; max-width: 1800px; margin: 0 auto 30px auto; }
+  .benchmark-bar { background: var(--bg-card); color: var(--text-muted); padding: 14px 20px; border-radius: 16px; display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; font-size: 13px; font-weight: 800; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  .benchmark-bar span { color: #fff; background: var(--primary); padding: 4px 12px; border-radius: 8px; margin-left: 8px; font-family: 'Space Mono', monospace; }
+  
+  .global-summary { display: flex; justify-content: space-around; background: var(--bg-card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+  .global-metric { text-align: center; border-right: 1px solid var(--border); flex: 1; }
+  .global-metric:last-child { border-right: none; }
+  .global-metric .lbl { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;}
+  .global-metric .val { font-size: 36px; font-weight: 900; margin: 8px 0; letter-spacing: -1px;}
+  .global-metric .sub { font-size: 13px; color: var(--text-main); font-weight: 700; background: var(--bg-inner); display: inline-block; padding: 6px 16px; border-radius: 30px; border: 1px solid var(--border); font-family: 'Space Mono', monospace;}
+  
+  .grid { display: flex; gap: 24px; max-width: 1800px; margin: 0 auto; align-items: flex-start; }
+  
+  /* Columns & Cards */
+  .col { flex: 1; padding: 24px; border-radius: 24px; border: 2px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); min-width: 0; }
+  .col.morning { background: var(--sup-morning); border-color: var(--sup-morning-border); }
+  .col.evening { background: var(--sup-evening); border-color: var(--sup-evening-border); }
+  .col.night { background: var(--sup-night); border-color: var(--sup-night-border); }
+  
+  .sup { text-align: center; font-weight: 900; font-size: 22px; margin-bottom: 20px; color: var(--text-main); }
+  
+  .team { background: rgba(255,255,255,0.7); padding: 20px; border-radius: 18px; margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(10px); }
+  .sup-data-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed rgba(0,0,0,0.1); margin-bottom: 12px; padding-bottom: 12px; }
+  .sup-data-label { font-weight: 800; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .badge-staff { background: var(--primary); color: white; padding: 6px 16px; border-radius: 30px; font-weight: 800; font-size: 13px; box-shadow: 0 2px 4px rgba(37,99,235,0.2);}
+  
+  .team-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
+  .team-table th { text-align: left; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid rgba(0,0,0,0.05); padding: 10px 0; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;}
+  .team-table td { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-weight: 700; color: var(--text-main); }
+  .team-table th:nth-child(n+2), .team-table td:nth-child(n+2) { text-align: right; }
+
+  /* Interactive Cards & Tooltips */
+  .card { background: var(--bg-card); border-radius: 18px; padding: 18px; margin-bottom: 16px; border: 2px solid var(--border); position: relative; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, border-color 0.2s ease; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card:hover { border-color: var(--primary); transform: translateY(-6px) scale(1.01); box-shadow: 0 24px 40px -8px rgba(37,99,235,0.18); z-index: 200; }
+  .card.pinned { border-width: 3px; border-color: var(--success); transform: translateY(-6px) scale(1.01); box-shadow: 0 24px 40px -8px rgba(16,185,129,0.18); z-index: 200; }
+
+  /* Tooltip — opacity/transform based (smooth, no flicker) */
+  .tt-container {
+    opacity: 0; visibility: hidden; pointer-events: none;
+    position: absolute; bottom: calc(100% + 14px); left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: 440px; background: rgba(15,23,42,0.97);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    color: #fff; padding: 24px; border-radius: 20px;
+    box-shadow: 0 32px 64px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    border: 2px solid rgba(99,102,241,0.5);
+    z-index: 9999;
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34,1.2,0.64,1), visibility 0s linear 0.22s;
+  }
+  .card:hover .tt-container, .card.pinned .tt-container {
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34,1.2,0.64,1), visibility 0s linear 0s;
+  }
+  .card.pinned .tt-container { border-color: rgba(16,185,129,0.6); }
+  .card.pinned .tt-container::after { border-top-color: rgba(16,185,129,0.8); }
+  .tt-container::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -8px; border-width: 8px; border-style: solid; border-color: rgba(99,102,241,0.6) transparent transparent transparent; }
+
+  .tt-header { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 14px; text-align: center; letter-spacing: -0.3px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+  
+  .tt-info-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 12px; color: #94a3b8; background: rgba(255,255,255,0.04); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+  .tt-info-grid .info-row { display: flex; justify-content: space-between; align-items: center; }
+  .tt-info-grid span:first-child { color: #94a3b8; font-weight: 600; font-size: 11px; } .tt-info-grid span:last-child { color: #f1f5f9; font-weight: 800; font-size: 12px; }
+  
+  .tt-row { display: flex; justify-content: space-between; font-size: 13px; color: #cbd5e1; margin-bottom: 8px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 7px; font-weight: 600; }
+  .tt-row:last-child { border-bottom: none; }
+  .tt-row .val { font-weight: 900; font-size: 14px; font-family: 'Space Mono', monospace; letter-spacing: -0.5px; }
+  .tt-sub-row { font-size: 11px; color: #64748b; margin-top: -4px; margin-bottom: 8px; padding: 3px 0 3px 14px; display: flex; justify-content: space-between; font-weight: 600; background: rgba(255,255,255,0.02); border-radius: 4px; }
+  .tt-sub-row span { color: #e2e8f0; font-family: 'Space Mono', monospace; }
+  .tt-pack-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0 10px 0; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+  .tt-pack-table th { text-align: left; padding: 8px 10px; color: #64748b; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
+  .tt-pack-table td { padding: 9px 10px; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; }
+  .tt-pack-table tr:last-child td { border-bottom: none; }
+  .tt-pack-table td:first-child { color: #94a3b8; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; }
+  .tt-pack-total { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; padding: 9px 0; margin-top: 4px; border-top: 2px solid rgba(255,255,255,0.12); color: #f1f5f9; }
+  .tt-pack-total span { font-family: 'Space Mono', monospace; }
+  .tt-it-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.15); font-size: 12px; color: #94a3b8; font-weight: 700; }
+  .tt-it-row span { color: #f8fafc; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 900; }
+  .tt-section-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.2px; color: #475569; font-weight: 800; margin-bottom: 8px; margin-top: 14px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  
+  .name { font-weight: 900; font-size: 16px; color: var(--text-main); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+  .name-role { font-size: 10px; color: var(--primary); font-weight: 800; text-transform: uppercase; background: #eff6ff; padding: 4px 8px; border-radius: 20px; border: 1px solid #bfdbfe; }
+  
+  .proc-it-chip { font-size: 9.5px; font-weight: 800; color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 5px; padding: 1px 6px; font-family: 'Space Mono', monospace; white-space: nowrap; }
+  .proc { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: var(--text-muted); font-weight: 700; align-items: center; }
+  .proc-sub { font-size: 10px; font-weight: 600; color: #94a3b8; padding: 2px 2px 6px 2px; display: flex; gap: 12px; letter-spacing: 0.3px; }
+  .proc span:last-child { font-family: 'Space Mono', monospace; font-size: 15px; padding: 2px 8px; border-radius: 6px; background: var(--bg-main); border: 1px solid var(--border); }
+  
+  .high { color: var(--success) !important; font-weight: 900; }
+  .low { color: var(--danger) !important; font-weight: 900; }
+  .warn { color: var(--warning) !important; font-weight: 900; }
+  
+  /* Graphics */
+  .graphic-box { margin-top: 18px; padding-top: 18px; border-top: 2px dashed var(--border); }
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .prog-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+  .prog-val { font-size: 13px; font-weight: 900; color: var(--primary); font-family: 'Space Mono', monospace;}
+  .prog-track { height: 14px; background: var(--border); border-radius: 50px; overflow: hidden; display: flex; }
+  .prog-bar { height: 100%; border-radius: 50px 0 0 50px; background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%); transition: width 0.8s; flex-shrink: 0; }
+  .prog-bar.complete { background: linear-gradient(90deg, #10b981 0%, #059669 100%); border-radius: 50px; }
+  .prog-bar-nonit { height: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); flex-shrink: 0; transition: width 0.8s; }
+  .it-label { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 8px; font-family: 'Space Mono', monospace; }
+  .nonit-badge { display:inline-flex; align-items:center; gap:4px; background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:8px; padding:2px 8px; font-size:10px; font-weight:800; margin-left:6px; }
+  .nonit-legend { display:flex; gap:12px; margin-top:6px; font-size:10px; font-weight:700; color:var(--text-muted); }
+  .nonit-legend-dot { width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:3px; }
+  .nonit-reasons-box { margin-top:10px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:10px 12px; }
+  .nonit-reasons-title { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:#92400e; margin-bottom:8px; }
+  .nonit-reason-row { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid rgba(245,158,11,0.15); font-size:11px; }
+  .nonit-reason-row:last-child { border-bottom:none; }
+  .nonit-time { font-family:'Space Mono',monospace; font-size:10px; color:#d97706; font-weight:700; white-space:nowrap; min-width:110px; }
+  .nonit-mins { background:#fef3c7; color:#92400e; border-radius:6px; padding:1px 6px; font-size:10px; font-weight:800; white-space:nowrap; }
+  .nonit-reason-text { color:var(--text-muted); font-weight:600; font-size:11px; line-height:1.4; }
+  .tt-nonit-box { margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.12); }
+  .tt-nonit-header { display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#f59e0b; margin-bottom:8px; }
+  .tt-nonit-total { background:rgba(245,158,11,0.2); color:#fbbf24; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800; }
+  .tt-nonit-row { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:11px; }
+  .tt-nonit-row:last-child { border-bottom:none; }
+  .tt-nonit-time { font-family:'Space Mono',monospace; font-size:10px; color:#fbbf24; font-weight:700; white-space:nowrap; min-width:105px; }
+  .tt-nonit-mins { background:rgba(245,158,11,0.25); color:#f59e0b; border-radius:5px; padding:1px 5px; font-size:10px; font-weight:800; white-space:nowrap; }
+  .tt-nonit-reason { color:#94a3b8; font-weight:600; font-size:11px; line-height:1.4; }
+  .tt-nonit-csv-row { background:rgba(245,158,11,0.05); border-radius:6px; padding:4px 6px !important; }
+  .tt-nonit-csv-label { font-size:10px; color:#d97706; font-weight:700; min-width:100px; }
+  .tt-nonit-note { margin-top:8px; padding:7px 10px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:8px; font-size:11px; color:#a5b4fc; font-weight:600; line-height:1.5; display:flex; gap:7px; align-items:flex-start; }
+  .tt-nonit-note-icon { font-size:13px; flex-shrink:0; margin-top:1px; }
+
+  /* Non-IT parse preview */
+  .nonit-preview { display:none; margin-top:10px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:10px 12px; font-size:11px; font-weight:600; color:#92400e; line-height:1.7; }
+  .nonit-preview strong { color:#b45309; }
+
+  /* Quick Notes builder */
+  .qn-builder { margin-top:12px; background:var(--bg-inner); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .qn-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .qn-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .qn-name, .qn-extra { flex:1 1 200px; min-width:150px; padding:8px 11px; border:2px solid var(--border); border-radius:9px; font-size:13px; font-weight:600; color:var(--text-main); font-family:inherit; background:var(--bg-card); transition:border-color 0.15s; }
+  .qn-name:focus, .qn-extra:focus { outline:none; border-color:var(--primary); }
+  .qn-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .qn-tag { background:var(--bg-card); border:1.5px solid var(--border); color:var(--text-muted); border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s; user-select:none; }
+  .qn-tag:hover { border-color:#f59e0b; color:#b45309; }
+  .qn-tag.sel { background:#fef3c7; border-color:#f59e0b; color:#92400e; }
+  .qn-add { background:#d97706; border:none; color:#fff; border-radius:9px; padding:9px 18px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .qn-add:hover { background:#b45309; box-shadow:0 3px 10px rgba(217,119,6,0.3); }
+  .qn-note-list { margin-top:4px; display:flex; flex-direction:column; gap:6px; }
+  .qn-note-item { display:flex; align-items:flex-start; gap:8px; background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.22); border-radius:9px; padding:7px 10px; font-size:12px; }
+  .qn-note-name { font-weight:800; color:#4f46e5; white-space:nowrap; }
+  .qn-note-text { color:var(--text-main); font-weight:600; flex:1; line-height:1.4; }
+  .qn-note-del { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:16px; font-weight:800; line-height:1; padding:0 2px; flex-shrink:0; }
+  .qn-note-del:hover { color:var(--danger); }
+  .qn-empty { font-size:11px; color:var(--text-muted); font-style:italic; }
+
+  /* Newhire Section */
+  .newhire-section { margin-top: 20px; border-radius: 16px; overflow: hidden; border: 2px dashed rgba(0,0,0,0.12); }
+  .newhire-toggle { width: 100%; background: rgba(0,0,0,0.04); border: none; padding: 13px 18px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; text-align: left; letter-spacing: 0.3px; }
+  .newhire-toggle:hover { background: rgba(0,0,0,0.08); color: var(--text-main); }
+  .newhire-toggle .nh-badge { background: #7c3aed; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+  .newhire-toggle .nh-chevron { font-size: 12px; transition: transform 0.2s; }
+  .newhire-toggle.open .nh-chevron { transform: rotate(180deg); }
+  .newhire-body { display: none; padding: 14px; background: rgba(255,255,255,0.5); }
+  .newhire-body.open { display: block; }
+  .newhire-summary { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .nh-stat { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 11px; font-weight: 800; color: var(--text-muted); flex: 1; text-align: center; min-width: 60px; }
+  .nh-stat .nh-val { display: block; font-size: 18px; font-weight: 900; color: var(--text-main); margin-top: 2px; font-family: 'Space Mono', monospace; }
+  .card.newhire-card { background: #faf5ff; border-color: #e9d5ff; box-shadow: none; }
+  .card.newhire-card:hover { border-color: #7c3aed; box-shadow: 0 10px 20px rgba(124,58,237,0.1); }
+  .card.newhire-card .name-role { background: #f3e8ff; color: #7c3aed; border-color: #e9d5ff; }
+  .card.newhire-card .tt-container { border-color: #7c3aed; }
+  .card.newhire-card .tt-container::after { border-top-color: #7c3aed; }
+
+  #error-box { display: none; padding: 15px; background: #fef2f2; border-left: 4px solid var(--danger); color: #991b1b; margin-bottom: 20px; font-size: 14px; border-radius: 8px; font-weight: 600; }
+  #error-box.show { display: block; }
+
+  /* ===== Insights / Analytics panels ===== */
+  .insights-wrap { max-width:1800px; margin:0 auto 26px auto; display:flex; flex-direction:column; gap:16px; }
+  .panel { background:var(--bg-card); border:1px solid var(--border); border-radius:18px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); overflow:hidden; }
+  .panel-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; cursor:pointer; user-select:none; gap:12px; }
+  .panel-head h3 { font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-main); display:flex; align-items:center; gap:8px; }
+  .panel-head .chev { font-size:12px; color:var(--text-muted); transition:transform 0.2s; }
+  .panel.collapsed .chev { transform:rotate(-90deg); }
+  .panel-body { padding:0 20px 18px 20px; }
+  .panel.collapsed .panel-body { display:none; }
+  .panel-count { background:var(--danger); color:#fff; border-radius:20px; padding:2px 10px; font-size:11px; font-weight:800; }
+  .panel-count.ok { background:var(--success); }
+
+  /* Attention list */
+  .att-grid { display:flex; flex-direction:column; gap:7px; }
+  .att-row { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; background:var(--bg-inner); border:1px solid var(--border); }
+  .att-row .att-pct { font-family:'Space Mono',monospace; font-weight:900; min-width:52px; text-align:right; }
+  .att-row .att-name { font-weight:800; color:var(--text-main); cursor:pointer; }
+  .att-row .att-name:hover { color:var(--primary); text-decoration:underline; }
+  .att-row .att-meta { font-size:11px; color:var(--text-muted); font-weight:700; flex:1; }
+  .att-shift { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; padding:2px 8px; border-radius:20px; }
+  .att-shift.M { background:var(--sup-morning); color:#075985; }
+  .att-shift.E { background:var(--sup-evening); color:#92400e; }
+  .att-shift.N { background:var(--sup-night); color:#3730a3; }
+  .att-empty { color:var(--success); font-weight:700; font-size:13px; padding:6px 2px; }
+  .flag-repeat { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; border-radius:6px; padding:1px 7px; font-size:10px; font-weight:800; white-space:nowrap; }
+
+  /* Shift compare */
+  .shift-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .shift-card { border-radius:14px; padding:14px 16px; border:1px solid var(--border); }
+  .shift-card.M { background:var(--sup-morning); border-color:var(--sup-morning-border); }
+  .shift-card.E { background:var(--sup-evening); border-color:var(--sup-evening-border); }
+  .shift-card.N { background:var(--sup-night); border-color:var(--sup-night-border); }
+  .shift-card .sc-title { font-size:12px; font-weight:900; color:var(--text-main); margin-bottom:10px; }
+  .sc-metrics { display:flex; gap:8px; flex-wrap:wrap; }
+  .sc-metric { background:rgba(255,255,255,0.65); border-radius:10px; padding:8px 6px; flex:1; min-width:58px; text-align:center; }
+  .sc-metric .v { font-size:19px; font-weight:900; font-family:'Space Mono',monospace; letter-spacing:-0.5px; }
+  .sc-metric .k { font-size:9px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.3px; margin-top:2px; }
+
+  /* Process scorecard */
+  .score-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .score-table th { text-align:left; padding:8px 10px; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); border-bottom:2px solid var(--border); }
+  .score-table td { padding:8px 10px; border-bottom:1px solid var(--border); font-weight:700; color:var(--text-main); }
+  .score-table th:not(:first-child), .score-table td:not(:first-child) { text-align:center; }
+  .score-cell { font-family:'Space Mono',monospace; font-weight:900; }
+  .score-bench { font-size:10px; color:var(--text-muted); font-weight:700; display:block; }
+
+  /* Spotlight */
+  .spot-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .spot-card { border-radius:14px; padding:14px 16px; background:linear-gradient(135deg,#fffbeb,#fef3c7); border:1px solid #fde68a; }
+  .spot-card .sp-shift { font-size:10px; font-weight:800; text-transform:uppercase; color:#92400e; letter-spacing:0.4px; }
+  .spot-card .sp-name { font-size:16px; font-weight:900; color:#1e293b; margin:4px 0; }
+  .spot-card .sp-pct { font-family:'Space Mono',monospace; font-weight:900; color:#047857; }
+  .spot-streak { font-size:11px; font-weight:800; color:#b45309; margin-top:4px; }
+  .spot-none { font-size:13px; color:#92400e; font-weight:700; }
+
+  /* Attendance */
+  .att-summary { display:flex; gap:18px; flex-wrap:wrap; margin-bottom:10px; }
+  .att-stat { font-size:12px; font-weight:800; color:var(--text-muted); }
+  .att-stat b { color:var(--text-main); font-size:16px; font-family:'Space Mono',monospace; }
+  .absent-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .absent-chip { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+
+  /* Sparkline + badges on cards */
+  .spark-wrap { display:flex; align-items:center; gap:8px; margin:2px 0 8px 0; }
+  .spark-svg { display:block; }
+  .trend-arrow { font-size:12px; font-weight:900; font-family:'Space Mono',monospace; white-space:nowrap; }
+  .trend-up { color:var(--success); } .trend-down { color:var(--danger); } .trend-flat { color:var(--text-muted); }
+  .card-badges { display:flex; flex-wrap:wrap; gap:5px; margin:0 0 8px 0; }
+  .cbadge { font-size:9.5px; font-weight:800; border-radius:6px; padding:2px 7px; }
+  .cbadge.repeat { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+  .cbadge.coach { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; cursor:pointer; }
+  .cbadge.top { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
+
+  /* Modal */
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(3px); z-index:10000; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:var(--bg-card); color:var(--text-main); border-radius:20px; width:100%; max-width:560px; border:1px solid var(--border); box-shadow:0 32px 64px -12px rgba(0,0,0,0.4); overflow:hidden; }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .modal-head h3 { font-size:18px; font-weight:900; }
+  .modal-close { background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); line-height:1; }
+  .modal-close:hover { color:var(--danger); }
+  .modal-body { padding:20px 22px; max-height:70vh; overflow-y:auto; }
+  .mp-stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .mp-stat { flex:1; min-width:84px; background:var(--bg-inner); border:1px solid var(--border); border-radius:12px; padding:10px 12px; text-align:center; }
+  .mp-stat .v { font-size:22px; font-weight:900; font-family:'Space Mono',monospace; }
+  .mp-stat .k { font-size:10px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-top:2px; }
+  .mp-section-title { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-muted); margin:16px 0 8px; }
+  .mp-day-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px; font-weight:700; }
+  .mp-day-row .d { color:var(--text-muted); font-family:'Space Mono',monospace; font-size:12px; }
+  .mp-note { background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.22); border-radius:9px; padding:7px 10px; font-size:12px; margin-bottom:6px; }
+  .mp-note .d { font-size:11px; color:var(--text-muted); font-weight:800; font-family:'Space Mono',monospace; }
+  .coach-item { background:var(--bg-inner); border:1px solid var(--border); border-radius:10px; padding:8px 11px; margin-bottom:6px; font-size:13px; }
+  .coach-item .cd { font-size:11px; color:var(--text-muted); font-weight:800; font-family:'Space Mono',monospace; }
+  .coach-item .cdel { float:right; cursor:pointer; color:#94a3b8; font-weight:900; }
+  .coach-item .cdel:hover { color:var(--danger); }
+  .coach-add { display:flex; gap:8px; margin-top:8px; }
+  .coach-add input { flex:1; padding:9px 11px; border:2px solid var(--border); border-radius:9px; font-family:inherit; font-size:13px; background:var(--bg-card); color:var(--text-main); }
+  .coach-add button { background:var(--primary); color:#fff; border:none; border-radius:9px; padding:9px 16px; font-weight:800; cursor:pointer; }
+  .coach-add button:hover { background:var(--primary-dark); }
+
+  /* Daily summary modal */
+  .summary-text { width:100%; height:340px; font-family:'Space Mono',monospace; font-size:12px; line-height:1.6; border:2px solid var(--border); border-radius:12px; padding:14px; resize:vertical; background:var(--bg-inner); color:var(--text-main); }
+  .copy-row { display:flex; gap:10px; margin-top:12px; }
+
+  /* Data quality bar */
+  .dq-bar { max-width:1800px; margin:0 auto 16px auto; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .dq-bar.warn { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+  .dq-bar .dq-x { cursor:pointer; font-weight:900; padding:0 4px; }
+
+  /* Theme toggle */
+  .theme-toggle { background:var(--bg-card); border:2px solid var(--border); border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer; color:var(--text-main); }
+  .theme-toggle:hover { border-color:var(--primary); color:var(--primary); }
+
+  /* ===== Dark mode ===== */
+  body.dark {
+    --bg-main:#0b1220; --bg-card:#111a2e; --bg-inner:#0f1830;
+    --border:#243049; --text-main:#e5edff; --text-muted:#93a4c4;
+    --sup-morning:#0e2236; --sup-evening:#2a2410; --sup-night:#181a39;
+    --sup-morning-border:#1d3a55; --sup-evening-border:#4a3f17; --sup-night-border:#2c2f63;
+  }
+  body.dark input[type="date"], body.dark input[type="text"], body.dark input[type="number"], body.dark textarea,
+  body.dark .search-box input, body.dark .sort-box select { background:#0f1830; color:var(--text-main); border-color:var(--border); }
+  body.dark .team { background:rgba(255,255,255,0.04); }
+  body.dark .proc span:last-child { background:#0f1830; border-color:var(--border); }
+  body.dark .file-drop-area, body.dark .settings-panel summary, body.dark .settings-panel { background:#0f1830; }
+  body.dark .setup-card, body.dark .sc-metric { background:var(--bg-card); }
+  body.dark .att-shift.M { color:#bae6fd; } body.dark .att-shift.E { color:#fde68a; } body.dark .att-shift.N { color:#c7d2fe; }
+  body.dark .proc-it-chip, body.dark .name-role { background:#1a2540; border-color:var(--border); }
+
+  /* ===== Responsive (tablet / phone) ===== */
+  @media (max-width: 1100px) {
+    .grid { flex-direction:column; }
+    .shift-cards, .spot-cards { grid-template-columns:1fr; }
+    .control-bar { flex-direction:column; align-items:stretch; }
+    .controls-left, .controls-right { flex-wrap:wrap; }
+    .search-box { max-width:none; }
+    .tt-container { width:min(440px,86vw); }
+  }
+  @media (max-width: 640px) {
+    .global-summary { flex-wrap:wrap; gap:14px; }
+    .global-metric { border-right:none; flex:1 0 40%; }
+    .header { font-size:20px; }
+    .settings-grid { grid-template-columns:1fr; }
+  }
+  
+  /* Print Styles - Fully Optimized for PDF Alignment */
+  @media print {
+    @page { size: landscape; margin: 10mm; }
+    body { background: white !important; color: black !important; }
+    .control-bar, .tt-container, #setup-page, .day-tabs-wrap, .insights-wrap, .modal-overlay, .dq-bar { display: none !important; }
+    #dashboard-output { padding: 0 !important; display: block !important; }
+    .grid { display: flex !important; flex-direction: row !important; gap: 10px !important; align-items: stretch !important; }
+    .col { width: 33.33% !important; flex: 1 !important; break-inside: avoid; border: 2px solid #e2e8f0 !important; padding: 15px !important; box-shadow: none !important; }
+    
+    .col.morning { background: #e0f2fe !important; }
+    .col.evening { background: #fef3c7 !important; }
+    .col.night { background: #e0e7ff !important; }
+    
+    .card { break-inside: avoid; border: 1px solid #cbd5e1 !important; box-shadow: none !important; padding: 12px !important; }
+    .global-summary, .benchmark-bar { break-inside: avoid; border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+    
+    .name { font-size: 14px !important; }
+    .proc { font-size: 12px !important; }
+    
+    .high { color: #059669 !important; }
+    .low { color: #dc2626 !important; }
+    .warn { color: #d97706 !important; }
+    .prog-bar { background: #3b82f6 !important; }
+    .prog-bar.complete { background: #10b981 !important; }
+    .prog-track { background: #e2e8f0 !important; border: 1px solid #cbd5e1 !important; }
+  }
+
+  /* ── Popup calculation breakdown ── */
+  .tt-calc-block { margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.18); }
+  .tt-calc-title { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:#93c5fd; margin-bottom:6px; }
+  .tt-calc-row { font-family:'Space Mono',monospace; font-size:10.5px; color:#cbd5e1; line-height:1.6; letter-spacing:-0.2px; padding:1px 0; }
+  .tt-calc-row strong { color:#fff; font-weight:800; }
+
+  /* ── OVERALL PERFORMANCE BLOCK (pooled output formula) ──
+     Overall % = Σ Actual Output ÷ Σ Expected Output × 100, across every process.
+     Packing enters as raw S+M units against the re-rated target; the WPI figure
+     shown on the Packing row is a display index only and is NOT fed in here. */
+  .ov-box { margin-top:10px; border:2px solid var(--border); border-radius:12px; background:var(--bg-inner); padding:9px 11px; }
+  .ov-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .ov-label { font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); }
+  .ov-val { font-family:'Space Mono',monospace; font-size:22px; font-weight:700; line-height:1; }
+  .ov-formula { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text-main); margin-top:5px; }
+  .ov-parts { font-family:'Space Mono',monospace; font-size:9.5px; color:var(--text-muted); margin-top:3px; line-height:1.45; }
+  .ov-box.ov-none .ov-val { color:var(--text-muted); }
+
+  /* ===== Weekend-crew additions ===== */
+  :root { --sup-weekend:#ccfbf1; --sup-weekend-border:#99f6e4; }
+  body.dark { --sup-weekend:#0c2724; --sup-weekend-border:#1d4a44; }
+  #dashboard-output { display:block; }
+  .col.weekend { background:var(--sup-weekend); border-color:var(--sup-weekend-border); }
+  .sup .sup-sub { display:block; font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:18px; align-items:start; }
+  .card-grid .card { margin-bottom:0; }
+  .team-wrap { display:grid; grid-template-columns: 1.3fr 1fr; gap:18px; margin-bottom:24px; }
+  .team-wrap .team { margin-bottom:0; }
+  .card.sup-card { border-color:#5eead4; }
+  .card.sup-card .name-role { background:#ccfbf1; color:#0f766e; border-color:#99f6e4; }
+  .card.absent-card { background:var(--bg-inner); border-style:dashed; cursor:default; opacity:0.85; }
+  .card.absent-card:hover { transform:none; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-color:var(--border); }
+  .absent-msg { font-size:13px; font-weight:700; color:var(--text-muted); padding:14px 0 6px; }
+  .days-chip { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px 0; }
+  .days-chip span { font-size:10px; font-weight:800; font-family:'Space Mono',monospace; background:var(--bg-inner); border:1px solid var(--border); color:var(--text-muted); border-radius:6px; padding:2px 7px; }
+  .month-tab-all { border-style:solid; }
+  .mom-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .mom-table th { text-align:center; padding:8px 10px; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); border-bottom:2px solid var(--border); }
+  .mom-table th:first-child, .mom-table td:first-child { text-align:left; }
+  .mom-table td { padding:8px 10px; border-bottom:1px solid var(--border); font-weight:700; color:var(--text-main); text-align:center; }
+  .mom-table tr.team-row td { border-top:2px solid var(--border); font-weight:900; }
+  .mom-pct { font-family:'Space Mono',monospace; font-weight:900; font-size:13px; }
+  .mom-sub { display:block; font-size:10px; color:var(--text-muted); font-weight:700; font-family:'Space Mono',monospace; }
+  .mom-delta { font-size:10px; font-weight:900; font-family:'Space Mono',monospace; margin-left:4px; }
+  .tab-x { margin-left:2px; }
+  .settings-modal .modal { max-width:640px; }
+  .settings-modal .settings-grid { margin-bottom:12px; }
+  .hint { font-size:11px; color:var(--text-muted); font-weight:600; margin-top:6px; line-height:1.5; text-transform:none; letter-spacing:0; }
+  .empty-state { max-width:720px; margin:40px auto; text-align:center; background:var(--bg-card); border:2px dashed var(--border); border-radius:20px; padding:40px 24px; }
+  .empty-state h2 { font-size:20px; font-weight:900; margin-bottom:8px; }
+  .empty-state p { color:var(--text-muted); font-weight:600; margin-bottom:18px; }
+  #file-input { display:none; }
+  @media (max-width: 1100px) { .team-wrap { grid-template-columns:1fr; } }
+  @media (max-width: 640px) { .card-grid { grid-template-columns:1fr; } #dashboard-output { padding:16px 16px 80px; } .tt-container { width:min(440px,90vw); } }
+  @media print {
+    .card-grid { grid-template-columns:repeat(2,1fr) !important; }
+    .col.weekend { background:#ccfbf1 !important; }
+    .team-wrap { grid-template-columns:1.3fr 1fr !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="dashboard-output">
+  <div class="control-bar">
+    <div class="controls-left">
+      <div class="search-box"><input type="text" id="search-input" placeholder="🔍 Search Associate..." oninput="render()"></div>
+      <div class="sort-box">
+        <select id="sort-select" onchange="render()">
+          <option value="default">Sort: Roster Order</option>
+          <option value="perf-high">Performance: High to Low</option>
+          <option value="perf-low">Performance: Low to High</option>
+          <option value="it-low">IT Compliance: Lowest</option>
+        </select>
+      </div>
+    </div>
+    <div class="controls-right">
+      <button class="action-btn" onclick="openSummary()">📋 Summary</button>
+      <button class="action-btn" onclick="openSettings()">⚙️ Settings</button>
+      <button class="theme-toggle no-print" id="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+      <button class="action-btn" onclick="downloadCSV()">💾 Save CSV</button>
+      <button class="action-btn accent" onclick="window.print()">🖨️ Print / Export PDF</button>
+      <button class="action-btn download" onclick="downloadHTML()">⬇ Download Dashboard</button>
+    </div>
+  </div>
+
+  <div class="dq-bar no-print" id="dq-bar" style="display:none"></div>
+
+  <div class="day-tabs-wrap no-print">
+    <span class="day-tabs-label">📅 Months</span>
+    <div class="day-tabs" id="month-tabs"></div>
+    <button class="day-add-tab" onclick="document.getElementById('file-input').click()">＋ Add CSV</button>
+    <input type="file" id="file-input" accept=".csv" onchange="handleUpload(event)">
+  </div>
+
+  <div class="day-tabs-wrap no-print" id="report-row" style="display:none">
+    <span class="day-tabs-label">📄 Reports</span>
+    <div class="day-tabs" id="report-tabs"></div>
+  </div>
+
+  <div class="header" id="main-header">Mississauga Weekend Crew — Monthly Performance</div>
+
+  <div class="global-tabs-container">
+    <div class="benchmark-bar" id="bench-bar"></div>
+    <div class="global-summary" id="global-summary"></div>
+  </div>
+
+  <div class="insights-wrap no-print" id="insights"></div>
+
+  <div class="grid" id="dash-inner"></div>
+</div>
+
+<!-- Month Summary Modal -->
+<div class="modal-overlay" id="summary-modal" onclick="if(event.target===this)closeModal('summary-modal')">
+  <div class="modal">
+    <div class="modal-head"><h3>📋 Summary</h3><button class="modal-close" onclick="closeModal('summary-modal')">&times;</button></div>
+    <div class="modal-body">
+      <textarea class="summary-text" id="summary-text" readonly></textarea>
+      <div class="copy-row"><button class="action-btn accent" id="copy-btn" onclick="copySummary()" style="flex:1">📑 Copy to Clipboard</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay settings-modal" id="settings-modal" onclick="if(event.target===this)closeModal('settings-modal')">
+  <div class="modal">
+    <div class="modal-head"><h3>⚙️ Settings &amp; Benchmarks</h3><button class="modal-close" onclick="closeModal('settings-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="input-group"><label>Supervisor</label><input type="text" id="s-sup"></div>
+      <div class="input-group"><label>Weekend Associates <span class="hint">(one per line)</span></label>
+        <textarea id="s-roster" style="height:110px"></textarea>
+        <div class="hint">Names are matched to the report ignoring case, spaces and underscores (Sumeet_Kumar = Sumeet Kumar). A name added here is picked up from the next CSV you upload.</div>
+      </div>
+      <div class="settings-grid">
+        <div><label>Picking Target / hr</label><input type="number" id="s-pick"></div>
+        <div><label>Stowing Target / hr</label><input type="number" id="s-stow"></div>
+        <div><label>Packing Single / hr</label><input type="number" id="s-packS"></div>
+        <div><label>Packing Multi / hr</label><input type="number" id="s-packM"></div>
+        <div><label>Packing (L) / hr</label><input type="number" id="s-packL"></div>
+        <div><label>Docker Target / hr</label><input type="number" id="s-docker"></div>
+        <div><label>IT Goal (hrs / day worked)</label><input type="number" id="s-it" step="0.5"></div>
+        <div><label>Good % (green at ≥)</label><input type="number" id="s-good"></div>
+        <div><label>Warn % (amber at ≥)</label><input type="number" id="s-warn"></div>
+      </div>
+      <button class="primary-btn" onclick="saveSettings()">Save &amp; Recalculate</button>
+    </div>
+  </div>
+</div>
+
+<script id="wk-data" type="application/json">{"reports": [{"from": "01 Jul 2026", "to": "31 Jul 2026", "csv": "Mississauga,,,,,,,,,,01 Jul 2026,31 Jul 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),40.0,66%,60.7,1:44:00,0:11:00,13:08:00,4,25 Apr 2026\n,,,Packing (M),78.0,81%,95.8,3:50:00,,,,\n,,,Stowing,280.0,57%,491.8,7:34:00,,,,\nSuresh Singh,E,Stower,Picking,577.0,63%,917.0,6:33:00,0:19:00,11:49:00,6,01 Apr 2021\n,,,Stowing,68.0,106%,63.9,0:59:00,,,,\n,,,Scanning,29.0,121%,24.0,0:12:00,,,,\n,,,Move Cancelled Items,166.0,116%,142.9,4:05:00,,,,\nVarinder Khan,M,-,Stowing,175.0,45%,387.8,5:58:00,0:25:00,8:25:00,3,25 Apr 2026\n,,,Docking,151.0,77%,196.0,2:27:00,,,,\nKulwinder Kumar,M,-,Packing (S),44.0,87%,50.8,1:27:00,0:00:00,13:27:00,4,25 Apr 2026\n,,,Packing (M),43.0,70%,61.7,2:28:00,,,,\n,,,Stowing,518.0,84%,619.7,9:32:00,,,,", "file": "WH_Reporting_-_Report.csv"}, {"from": "01 Aug 2026", "to": "31 Aug 2026", "csv": "Mississauga,,,,,,,,,,01 Aug 2026,31 Aug 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),99.0,79%,125.4,3:35:00,0:02:00,16:40:00,5,25 Apr 2026\n,,,Packing (M),122.0,83%,147.5,5:54:00,,,,\n,,,Packing (L),9.0,72%,12.5,0:50:00,,,,\n,,,Picking,70.0,61%,114.3,0:49:00,,,,\n,,,Stowing,185.0,58%,319.6,4:55:00,,,,\n,,,Move Cancelled Items,4.0,19%,21.6,0:37:00,,,,\nSuresh Singh,E,Stower,Picking,905.0,75%,1211.0,8:39:00,0:09:00,9:34:00,9,01 Apr 2021\n,,,Stowing,26.0,44%,59.6,0:55:00,,,,\nVarinder Khan,M,-,Packing (M),12.0,39%,30.4,1:13:00,3:21:00,20:06:00,5,25 Apr 2026\n,,,Stowing,633.0,62%,1020.5,15:42:00,,,,\n,,,Docking,209.0,82%,254.7,3:11:00,,,,\nKulwinder Kumar,M,-,Packing (S),105.0,97%,108.5,3:06:00,0:10:00,25:06:00,5,25 Apr 2026\n,,,Packing (M),181.0,99%,182.1,7:17:00,,,,\n,,,Packing (L),5.0,71%,7.0,0:28:00,,,,\n,,,Stowing,800.0,86%,926.3,14:15:00,,,,", "file": "WH_Reporting_-_Report_1.csv"}, {"from": "31 Aug 2026", "to": "20 Sep 2026", "csv": "Mississauga,,,,,,,,,,31 Aug 2026,20 Sep 2026\nName,Shift,Role ,Process,Productivity,Productivity %,Productivity Benchmark,IT Hours,Non IT Hours,Total IT Hours,Working days,Date of Joining\nSumeet Kumar,M,-,Packing (S),7.0,63%,11.1,0:19:00,0:00:00,18:39:00,3,25 Apr 2026\n,,,Packing (M),232.0,60%,384.6,15:23:00,,,,\n,,,Stowing,137.0,71%,191.8,2:57:00,,,,\nSuresh Singh,E,Stower,Packing (M),5.0,100%,5.0,0:12:00,0:00:00,20:03:00,7,01 Apr 2021\n,,,Packing (L),5.0,51%,9.7,0:39:00,,,,\n,,,Picking,1582.0,64%,2478.0,17:42:00,,,,\n,,,Stowing,79.0,81%,97.5,1:30:00,,,,\nVarinder Khan,M,-,Packing (S),38.0,72%,52.5,1:30:00,4:40:00,25:35:00,4,25 Apr 2026\n,,,Packing (M),244.0,65%,375.4,15:01:00,,,,\n,,,Packing (L),1.0,50%,2.0,0:08:00,,,,\n,,,Stowing,255.0,64%,399.8,6:09:00,,,,\n,,,Docking,257.0,115%,222.7,2:47:00,,,,\nKulwinder Kumar,M,-,Packing (S),49.0,105%,46.7,1:20:00,0:00:00,25:50:00,4,25 Apr 2026\n,,,Packing (M),419.0,97%,430.0,17:12:00,,,,\n,,,Packing (L),36.0,79%,45.5,3:02:00,,,,\n,,,Stowing,243.0,97%,251.3,3:52:00,,,,\n,,,Docking,68.0,212%,32.0,0:24:00,,,,", "file": "sep.csv"}], "savedAt": 1790679678007}</script>
+<script>
+  // Captured before anything renders, so "Download Dashboard" can bake the
+  // current reports back into a clean copy of this same file.
+  const PAGE_SRC = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+  const DEFAULT_SETTINGS = {
+    sup: 'Suresh Singh',
+    roster: ['Kulwinder Kumar', 'Varinder Khan', 'Dheeraj Mahajan', 'Sumeet Kumar'],
+    pick: 140, stow: 65, packS: 35, packM: 25, packL: 15, docker: 80,
+    itGoal: 6.5, goodAt: 100, warnAt: 80
+  };
+  const LS_KEY = 'yyz3_weekend_v2';
+  const PROC_ORDER = ['Stowing', 'Picking', 'Packing', 'Packing (L)', 'Docking'];
+  const NON_PERF = ['scanning', 'fulfilment', 'customer handing', 'customer handling'];
+  const MONTHS = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MON_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // A "report" is one uploaded CSV with its own date range (a week, a month, or
+  // anything between). Month tabs are rolled up from the reports that land in
+  // that month; overlapping reports are never counted twice.
+  let state = { reports: [], settings: Object.assign({}, DEFAULT_SETTINGS), savedAt: 0 };
+  let activeKey = null;   // 'ALL' | 'M:2026-09' | 'R:<report key>'
+
+  // ─────────────── helpers ───────────────
+  function norm(n) { return (n || '').replace(/_/g, ' ').trim().toLowerCase().replace(/\s+/g, ' '); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function rn(x) { return Math.round(x || 0).toLocaleString('en-US'); }
+  function toDec(t) {
+    t = (t || '').trim(); if (!t) return 0;
+    const p = t.split(':').map(Number);
+    return (p[0] || 0) + (p[1] || 0) / 60 + (p[2] || 0) / 3600;
+  }
+  function decToStr(x) { const h = Math.floor(x), m = Math.round((x - h) * 60); return h + ':' + String(m).padStart(2, '0') + ':00'; }
+  function fmtH(x) {
+    x = x || 0; const h = Math.floor(x), m = Math.round((x % 1) * 60);
+    if (m === 60) return (h + 1) + 'h';
+    return (h > 0 ? h + 'h' : '') + (m > 0 ? (h > 0 ? ' ' : '') + m + 'm' : (h > 0 ? '' : '0h'));
+  }
+  function cfg() { return state.settings; }
+  function colorClass(p) { const c = cfg(); return p >= c.goodAt ? 'high' : (p >= c.warnAt ? 'warn' : 'low'); }
+  function ragHex(p) { const c = cfg(); return p >= c.goodAt ? 'var(--success)' : (p >= c.warnAt ? 'var(--warning)' : 'var(--danger)'); }
+  function lsGet() { try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { return null; } }
+  function lsSet() { try { localStorage.setItem(LS_KEY, JSON.stringify({ reports: state.reports.map(stripReport), settings: state.settings, savedAt: state.savedAt })); } catch (e) {} }
+  function stripReport(r) { return { from: r.from, to: r.to, csv: r.csv, file: r.file }; }
+
+  // ─────────────── dates ───────────────
+  function parseDate(s) {
+    const m = (s || '').trim().match(/^(\d{1,2})\s+([A-Za-z]{3})[A-Za-z]*\s+(\d{4})$/);
+    if (!m) return null;
+    const mo = MONTHS[m[2].toLowerCase()]; if (!mo) return null;
+    return { y: +m[3], m: mo, d: +m[1], iso: m[3] + '-' + String(mo).padStart(2, '0') + '-' + String(+m[1]).padStart(2, '0') };
+  }
+  function lastDayOf(y, m) { return new Date(y, m, 0).getDate(); }
+  function dayShort(iso) { const p = iso.split('-'); return (+p[2]) + ' ' + MON_SHORT[+p[1] - 1]; }
+  function monthLabel(mk) { const p = mk.split('-'); return MONTH_NAMES[+p[1] - 1] + ' ' + p[0]; }
+  function spanDays(r) { return Math.round((new Date(r.toISO) - new Date(r.fromISO)) / 86400000) + 1; }
+  function overlaps(a, b) { return a.fromISO <= b.toISO && b.fromISO <= a.toISO; }
+
+  // Give an uploaded report its key and its tab label.
+  function normalizeReport(r) {
+    const f = parseDate(r.from), t = parseDate(r.to) || f;
+    r.fromISO = f ? f.iso : '0000-00-00';
+    r.toISO = t ? t.iso : r.fromISO;
+    r.key = r.fromISO + '_' + r.toISO;
+    r.month = r.toISO.slice(0, 7);                 // a report belongs to the month it ends in
+    if (f && t && f.y === t.y && f.m === t.m && f.d === 1 && t.d === lastDayOf(t.y, t.m)) r.label = monthLabel(r.month);
+    else if (f && t && f.y === t.y && f.m === t.m) r.label = f.d + '–' + t.d + ' ' + MON_SHORT[t.m - 1];
+    else r.label = dayShort(r.fromISO) + ' – ' + dayShort(r.toISO);
+    r.range = dayShort(r.fromISO) + ' → ' + dayShort(r.toISO);
+    return r;
+  }
+  function reportsSorted() { return state.reports.slice().sort((a, b) => a.fromISO.localeCompare(b.fromISO) || a.toISO.localeCompare(b.toISO)); }
+
+  // Month rollups. Within a month the longest report wins; anything overlapping
+  // it is left out of the rollup (so a full-month export supersedes the
+  // month-to-date one it contains, and separate weeks simply add up).
+  function monthGroups() {
+    const by = {};
+    reportsSorted().forEach(r => { (by[r.month] = by[r.month] || []).push(r); });
+    return Object.keys(by).sort().map(mk => {
+      const byLen = by[mk].slice().sort((a, b) => spanDays(b) - spanDays(a) || a.fromISO.localeCompare(b.fromISO));
+      const used = [], skipped = [];
+      byLen.forEach(r => { if (used.some(u => overlaps(u, r))) skipped.push(r); else used.push(r); });
+      used.sort((a, b) => a.fromISO.localeCompare(b.fromISO));
+      return { mk: mk, label: monthLabel(mk), used: used, skipped: skipped, all: by[mk] };
+    });
+  }
+  function groupFor(mk) { return monthGroups().find(g => g.mk === mk); }
+
+  // ─────────────── CSV ───────────────
+  function csvLines(text) {
+    let lines = [], p = '', s = true, row = [''], i = 0;
+    for (let l of text) {
+      if ('"' === l) { if (s && l === p) row[i] += l; s = !s; }
+      else if (',' === l && s) l = row[++i] = '';
+      else if ('\n' === l && s) { if ('\r' === p) row[i] = row[i].slice(0, -1); lines.push(row); row = ['']; i = 0; }
+      else row[i] += l;
+      p = l;
+    }
+    lines.push(row);
+    return lines;
+  }
+  function csvCell(v) { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+
+  function detectPeriod(lines, fname) {
+    const dates = [];
+    for (let j = 0; j < Math.min(2, lines.length); j++) lines[j].forEach(c => { const d = parseDate(c); if (d) dates.push(d); });
+    if (dates.length) return { from: lines[0].map(c => (c || '').trim()).filter(c => parseDate(c))[0], to: lines[0].map(c => (c || '').trim()).filter(c => parseDate(c)).pop() };
+    const m = (fname || '').match(/(20\d\d)[-_ .]?(\d{1,2})/);
+    if (!m) return null;
+    const y = +m[1], mo = +m[2];
+    return { from: '01 ' + MON_SHORT[mo - 1] + ' ' + y, to: lastDayOf(y, mo) + ' ' + MON_SHORT[mo - 1] + ' ' + y };
+  }
+
+  // Keep only the header + the blocks for the supervisor and weekend roster.
+  function filterReport(text, fname) {
+    const lines = csvLines(text).filter(r => r.join('').trim() !== '');
+    const hIdx = lines.findIndex(r => r.some(h => (h || '').trim().toLowerCase() === 'name'));
+    if (hIdx < 0) throw new Error('Could not find the "Name" header row in this CSV.');
+    const period = detectPeriod(lines, fname);
+    if (!period) throw new Error('Could not work out which dates this report covers.');
+    const want = new Set([norm(cfg().sup)].concat(cfg().roster.map(norm)));
+    const keep = lines.slice(0, hIdx + 1);
+    let cur = false; const found = [];
+    for (let j = hIdx + 1; j < lines.length; j++) {
+      const nm = (lines[j][0] || '').trim();
+      if (nm) { cur = want.has(norm(nm)); if (cur) found.push(nm); }
+      if (cur) keep.push(lines[j]);
+    }
+    return { period: period, csv: keep.map(r => r.map(csvCell).join(',')).join('\n'), found: found };
+  }
+
+  function parseReport(csv) {
+    const lines = csvLines(csv).filter(r => r.join('').trim() !== '');
+    const hIdx = lines.findIndex(r => r.some(h => (h || '').trim().toLowerCase() === 'name'));
+    const H = lines[hIdx].map(h => (h || '').trim().toLowerCase());
+    const col = n => H.indexOf(n);
+    const C = { name: col('name'), shift: col('shift'), role: col('role'), proc: col('process'), units: col('productivity'),
+                bench: col('productivity benchmark'), it: col('it hours'), nonit: col('non it hours'), tot: col('total it hours'),
+                days: col('working days'), doj: col('date of joining') };
+    const people = {}; let cur = null;
+    for (let j = hIdx + 1; j < lines.length; j++) {
+      const r = lines[j], g = i => (i >= 0 ? (r[i] || '').trim() : '');
+      if (g(C.name)) {
+        cur = { name: g(C.name).replace(/_/g, ' '), shift: g(C.shift), role: g(C.role), doj: g(C.doj),
+                totalIT: g(C.tot), nonIT: g(C.nonit), days: parseInt(g(C.days)) || 0, rows: [] };
+        people[norm(cur.name)] = cur;
+      } else if (cur && g(C.tot) && !cur.totalIT) cur.totalIT = g(C.tot);
+      if (cur && g(C.proc)) cur.rows.push({ proc: g(C.proc), units: parseFloat(g(C.units)) || 0, bench: parseFloat(g(C.bench)) || 0, it: toDec(g(C.it)) });
+    }
+    return people;
+  }
+  function reportPeople(r) { if (!r._people) r._people = parseReport(r.csv); return r._people; }
+
+  // Merge several reports into one set of people (sums units, benchmark, hours, days)
+  function mergePeople(list) {
+    if (list.length === 1) return reportPeople(list[0]);
+    const out = {};
+    list.forEach(r => {
+      const mp = reportPeople(r);
+      Object.keys(mp).forEach(k => {
+        const s = mp[k];
+        const t = out[k] || (out[k] = { name: s.name, role: s.role, doj: s.doj, totalIT: '', nonIT: '', days: 0, rows: [], _it: 0, _non: 0, reports: 0 });
+        t.role = s.role || t.role; t.doj = s.doj || t.doj;
+        t._it += toDec(s.totalIT); t._non += toDec(s.nonIT); t.days += s.days; t.rows = t.rows.concat(s.rows); t.reports++;
+        t.totalIT = decToStr(t._it); t.nonIT = decToStr(t._non);
+      });
+    });
+    return out;
+  }
+
+  // ─────────────── Calculation (mirrors the daily dashboard) ───────────────
+  function applyPackingWPI(a, c) {
+    const pk = a.procs['Packing'];
+    if (!pk || !pk.breakdown.length) return;
+    let sU = 0, sH = 0, mU = 0, mH = 0, hasS = false, hasM = false;
+    pk.breakdown.forEach(b => {
+      if (b.type === 'Packing (S)') { sU += b.raw; sH += b.itHrs; hasS = true; b.ben = c.packS * b.itHrs; }
+      else if (b.type === 'Packing (M)') { mU += b.raw; mH += b.itHrs; hasM = true; b.ben = c.packM * b.itHrs; }
+    });
+    pk.ben = pk.breakdown.reduce((s, b) => s + (b.ben || 0), 0);
+    const sBen = c.packS * sH, mBen = c.packM * mH;
+    const achS = sBen > 0 ? sU / sBen * 100 : 0, achM = mBen > 0 ? mU / mBen * 100 : 0;
+    const tot = sU + mU; if (tot <= 0) return;
+    if (hasS && hasM) {
+      const vS = sU / tot, vM = mU / tot;
+      pk.wpi = achS * vS + achM * vM;
+      pk.wpiLabel = 'WPI &middot; S ' + Math.round(achS) + '%&times;' + Math.round(vS * 100) + '% + M ' + Math.round(achM) + '%&times;' + Math.round(vM * 100) + '%';
+    } else if (hasS) { pk.wpi = achS; pk.wpiLabel = 'WPI &middot; S ' + Math.round(achS) + '%&times;100%'; }
+    else if (hasM) { pk.wpi = achM; pk.wpiLabel = 'WPI &middot; M ' + Math.round(achM) + '%&times;100%'; }
+  }
+
+  function computePerson(p, isSup) {
+    const c = cfg();
+    const a = { name: p.name, role: isSup ? 'Supervisor' : (p.role && p.role !== '-' ? p.role : 'Weekend'), csvRole: p.role, doj: p.doj || 'N/A',
+                isSup: isSup, procs: {}, itDec: toDec(p.totalIT), nonITHrs: toDec(p.nonIT), days: p.days, itStr: p.totalIT || '0:00:00', reports: p.reports || 1 };
+    const merged = {};
+    p.rows.forEach(r => { const m = merged[r.proc] || (merged[r.proc] = { proc: r.proc, units: 0, bench: 0, it: 0 }); m.units += r.units; m.bench += r.bench; m.it += r.it; });
+    Object.values(merged).forEach(r => {
+      let proc = r.proc; const low = proc.toLowerCase();
+      if (low.includes('return')) return;
+      if (NON_PERF.some(np => low.includes(np))) return;     // IT still counts via Total IT Hours
+      if (low.includes('newhire')) return;
+      const orig = proc;
+      if (proc !== 'Packing (L)' && proc.includes('Packing')) proc = 'Packing';
+      let ben = r.bench;
+      if (!ben || ben <= 0) ben = proc === 'Packing' ? c.packS * r.it : proc === 'Packing (L)' ? c.packL * r.it : proc === 'Picking' ? c.pick * r.it
+                               : proc === 'Stowing' ? c.stow * r.it : proc === 'Docking' ? c.docker * r.it : 0;
+      const d = a.procs[proc] || (a.procs[proc] = { act: 0, ben: 0, itHrs: 0, breakdown: [] });
+      d.act += r.units; d.ben += ben; d.itHrs += r.it;
+      d.breakdown.push({ type: orig, raw: r.units, itHrs: r.it, ben: ben });
+    });
+    applyPackingWPI(a, c);
+    const ordered = {};
+    PROC_ORDER.forEach(k => { if (a.procs[k]) ordered[k] = a.procs[k]; });
+    Object.keys(a.procs).forEach(k => { if (!ordered[k]) ordered[k] = a.procs[k]; });
+    a.procs = ordered;
+    let tA = 0, tB = 0; Object.values(a.procs).forEach(d => { tA += d.act; tB += d.ben; });
+    a.tAct = tA; a.tBen = tB;
+    a.overallPct = tB > 0 ? tA / tB * 100 : 0;
+    a.itTarget = c.itGoal * a.days;
+    a.itPct = a.itTarget > 0 ? (a.itDec + a.nonITHrs) / a.itTarget * 100 : 0;
+    a.itPerDay = a.days > 0 ? a.itDec / a.days : 0;
+    a.unitsPerDay = a.days > 0 ? tA / a.days : 0;
+    return a;
+  }
+
+  // Which reports feed a given tab
+  function reportsFor(key) {
+    if (!key) return [];
+    if (key === 'ALL') { let out = []; monthGroups().forEach(g => { out = out.concat(g.used); }); return out; }
+    if (key.slice(0, 2) === 'M:') { const g = groupFor(key.slice(2)); return g ? g.used : []; }
+    const r = state.reports.find(x => x.key === key.slice(2));
+    return r ? [r] : [];
+  }
+  function titleFor(key) {
+    if (key === 'ALL') { const rs = reportsSorted(); return rs.length ? dayShort(rs[0].fromISO) + ' – ' + dayShort(rs[rs.length - 1].toISO) : 'All data'; }
+    if (key.slice(0, 2) === 'M:') return monthLabel(key.slice(2));
+    const r = state.reports.find(x => x.key === key.slice(2));
+    return r ? r.label : '';
+  }
+
+  function buildView(key) {
+    const c = cfg();
+    const rs = reportsFor(key);
+    const people = rs.length ? mergePeople(rs) : {};
+    const supP = people[norm(c.sup)];
+    return {
+      sup: supP ? computePerson(supP, true) : null,
+      list: c.roster.map(n => people[norm(n)] ? computePerson(people[norm(n)], false) : { name: n, absent: true }),
+      reports: rs
+    };
+  }
+
+  function teamStats(list) {
+    const st = { procs: {}, itD: 0, nonIT: 0, itB: 0, days: 0, count: 0, act: 0, ben: 0 };
+    list.forEach(a => {
+      if (a.absent) return;
+      st.count++; st.itD += a.itDec; st.nonIT += a.nonITHrs; st.itB += a.itTarget; st.days += a.days;
+      Object.keys(a.procs).forEach(p => { const s = st.procs[p] || (st.procs[p] = { a: 0, b: 0 }); s.a += a.procs[p].act; s.b += a.procs[p].ben; st.act += a.procs[p].act; st.ben += a.procs[p].ben; });
+    });
+    st.overall = st.ben > 0 ? st.act / st.ben * 100 : 0;
+    st.itPct = st.itB > 0 ? (st.itD + st.nonIT) / st.itB * 100 : 0;
+    return st;
+  }
+
+  // Trend series: month rollups if we're on a month/all tab, otherwise the reports themselves
+  function timeline() {
+    if (activeKey && activeKey.slice(0, 2) === 'R:') return reportsSorted().map(r => ({ label: r.label, reports: [r] }));
+    return monthGroups().map(g => ({ label: g.label, reports: g.used }));
+  }
+  function seriesFor(name) {
+    const isSup = norm(name) === norm(cfg().sup);
+    const out = [];
+    timeline().forEach(step => {
+      const ppl = mergePeople(step.reports); const p = ppl[norm(name)];
+      if (p) { const a = computePerson(p, isSup); out.push({ label: step.label, pct: a.overallPct, itPct: a.itPct, itPerDay: a.itPerDay, days: a.days }); }
+    });
+    return out;
+  }
+  function sparkSVG(series) {
+    const vals = series.map(s => s.pct);
+    const W = 64, H = 20, pad = 2, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
+    const pts = vals.map((v, i) => [pad + i * (W - 2 * pad) / (vals.length - 1), H - pad - (v - mn) / rg * (H - 2 * pad)]);
+    const last = vals[vals.length - 1];
+    return '<svg class="spark-svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><polyline fill="none" stroke="' + ragHex(last) + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' +
+      pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') + '"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.5" fill="' + ragHex(last) + '"/></svg>';
+  }
+  function trendHTML(series) {
+    if (series.length < 2) return '';
+    const d = Math.round(series[series.length - 1].pct - series[series.length - 2].pct);
+    const cls = d > 2 ? 'trend-up' : d < -2 ? 'trend-down' : 'trend-flat';
+    const arrow = d > 2 ? '▲' : d < -2 ? '▼' : '■';
+    return '<span class="trend-arrow ' + cls + '" title="vs ' + esc(series[series.length - 2].label) + '">' + arrow + ' ' + (d > 0 ? '+' : '') + d + ' pts</span>';
+  }
+
+  // ─────────────── Rendering ───────────────
+  function buildCalcHTML(a) {
+    const s = cfg();
+    const rateOf = { 'Picking': s.pick, 'Stowing': s.stow, 'Packing (L)': s.packL, 'Docking': s.docker };
+    let rows = '';
+    Object.keys(a.procs).forEach(p => {
+      const d = a.procs[p];
+      if (p === 'Packing') {
+        const sE = d.breakdown.find(b => b.type === 'Packing (S)'), mE = d.breakdown.find(b => b.type === 'Packing (M)');
+        const totU = (sE ? sE.raw : 0) + (mE ? mE.raw : 0);
+        if (sE && mE && totU > 0) {
+          const aS = sE.ben > 0 ? Math.round(sE.raw / sE.ben * 100) : 0, aM = mE.ben > 0 ? Math.round(mE.raw / mE.ben * 100) : 0;
+          const vS = Math.round(sE.raw / totU * 100), vM = Math.round(mE.raw / totU * 100);
+          rows += '<div class="tt-calc-row">Pack S: ' + fmtH(sE.itHrs) + ' × ' + s.packS + '/hr = ' + rn(sE.ben) + ' → ' + rn(sE.raw) + ' ÷ ' + rn(sE.ben) + ' = <strong>' + aS + '%</strong></div>';
+          rows += '<div class="tt-calc-row">Pack M: ' + fmtH(mE.itHrs) + ' × ' + s.packM + '/hr = ' + rn(mE.ben) + ' → ' + rn(mE.raw) + ' ÷ ' + rn(mE.ben) + ' = <strong>' + aM + '%</strong></div>';
+          rows += '<div class="tt-calc-row">WPI = (' + aS + '%×' + vS + '%) + (' + aM + '%×' + vM + '%) = <strong>' + Math.round(d.wpi || 0) + '%</strong></div>';
+        } else {
+          const e = sE || mE, rt = sE ? s.packS : s.packM;
+          if (e) rows += '<div class="tt-calc-row">Packing: ' + rn(e.raw) + ' ÷ ' + rn(e.ben) + ' (' + fmtH(e.itHrs) + '×' + rt + ') = <strong>' + Math.round(d.wpi || 0) + '%</strong></div>';
+        }
+      } else {
+        const rate = rateOf[p]; const pct = d.ben > 0 ? Math.round(d.act / d.ben * 100) : 0;
+        rows += '<div class="tt-calc-row">' + esc(p) + ': ' + fmtH(d.itHrs) + ' × ' + (rate ? rate + '/hr' : 'sheet rate') + ' = ' + rn(d.ben) + ' → ' + rn(d.act) + ' ÷ ' + rn(d.ben) + ' = <strong>' + pct + '%</strong></div>';
+      }
+    });
+    rows += '<div class="tt-calc-row" style="margin-top:5px">IT Goal: ' + a.days + ' days × ' + s.itGoal + 'h = <strong>' + rn(a.itTarget) + 'h</strong></div>';
+    rows += '<div class="tt-calc-row">IT Compliance: (' + fmtH(a.itDec) + ' IT' + (a.nonITHrs > 0 ? ' + ' + fmtH(a.nonITHrs) + ' Non-IT' : '') + ') ÷ ' + rn(a.itTarget) + 'h = <strong>' + Math.round(a.itPct) + '%</strong></div>';
+    rows += '<div class="tt-calc-row">Overall Productivity: ' + rn(a.tAct) + ' ÷ ' + rn(a.tBen) + ' = <strong>' + Math.round(a.overallPct) + '%</strong></div>';
+    return '<div class="tt-calc-block"><div class="tt-calc-title">📐 Calculations</div>' + rows + '</div>';
+  }
+
+  function overallBoxHTML(a) {
+    if (a.tBen <= 0) return '<div class="ov-box ov-none"><div class="ov-head"><span class="ov-label">Overall Performance</span><span class="ov-val">--</span></div><div class="ov-formula">No benchmarked output</div></div>';
+    const parts = Object.keys(a.procs).map(p => (p === 'Packing' ? 'Pack S+M' : p) + ' ' + rn(a.procs[p].act) + '/' + rn(a.procs[p].ben));
+    const pct = Math.round(a.overallPct);
+    return '<div class="ov-box"><div class="ov-head"><span class="ov-label">Overall Performance</span><span class="ov-val ' + colorClass(pct) + '">' + pct + '%</span></div>' +
+           '<div class="ov-formula">' + rn(a.tAct) + ' actual ÷ ' + rn(a.tBen) + ' expected</div><div class="ov-parts">' + esc(parts.join(' · ')) + '</div></div>';
+  }
+
+  function cardHTML(a, topName) {
+    if (a.absent) {
+      return '<div class="card absent-card"><div class="name"><span>' + esc(a.name) + '</span><span class="name-role" style="background:var(--bg-card);color:var(--text-muted);border-color:var(--border)">No Data</span></div>' +
+             '<div class="absent-msg">No hours recorded in this period.</div></div>';
+    }
+    let pHtml = '', ttRows = '';
+    Object.keys(a.procs).forEach(p => {
+      const d = a.procs[p];
+      let pct = d.ben > 0 ? d.act / d.ben * 100 : 0;
+      if (p === 'Packing' && d.wpi != null) pct = d.wpi;
+      const cls = colorClass(pct);
+      let label = p, sub = '';
+      if (p === 'Packing') {
+        label = 'Packing (S+M)';
+        const sE = d.breakdown.find(b => b.type === 'Packing (S)'), mE = d.breakdown.find(b => b.type === 'Packing (M)');
+        const parts = []; if (sE) parts.push('S: ' + rn(sE.raw)); if (mE) parts.push('M: ' + rn(mE.raw));
+        if (parts.length) sub = '<div class="proc-sub">' + parts.join(' &middot; ') + '</div>';
+      }
+      const chip = d.itHrs > 0 ? '<span class="proc-it-chip">' + fmtH(d.itHrs) + '</span>' : '';
+      pHtml += '<div class="proc"><span>' + esc(label) + '</span><div style="display:flex;align-items:center;gap:6px">' + chip + '<span class="' + cls + '">' + Math.round(pct) + '%</span></div></div>' + sub;
+      if (p === 'Packing') {
+        const tr = d.breakdown.map(b => '<tr><td>' + esc(b.type) + '</td><td>' + rn(b.raw) + '</td><td>' + fmtH(b.itHrs) + '</td><td>' + (b.ben > 0 ? rn(b.ben) : '--') + '</td></tr>').join('');
+        ttRows += '<div class="tt-section-label">Packing Breakdown</div><table class="tt-pack-table"><thead><tr><th>Type</th><th>Actual Units</th><th>IT Time</th><th>Target</th></tr></thead><tbody>' + tr + '</tbody></table>' +
+                  '<div class="tt-pack-total"><span>' + (d.wpi != null ? d.wpiLabel : 'Combined Packing (' + rn(d.act) + ' / ' + rn(d.ben) + ')') + '</span><span class="' + cls + '">' + Math.round(pct) + '%</span></div>';
+      } else {
+        ttRows += '<div class="tt-row"><span>' + esc(p) + '</span><span class="val ' + cls + '">' + rn(d.act) + ' / ' + rn(d.ben) + ' (' + Math.round(pct) + '%)</span></div>';
+      }
+    });
+    if (a.nonITHrs > 0) ttRows += '<div class="tt-nonit-box"><div class="tt-nonit-header"><span>Non-IT Hours</span><span class="tt-nonit-total">' + fmtH(a.nonITHrs) + '</span></div></div>';
+    ttRows += buildCalcHTML(a);
+
+    const series = seriesFor(a.name);
+    const spark = series.length >= 2 ? '<div class="spark-wrap" title="Overall % over time">' + sparkSVG(series) + trendHTML(series) + '</div>' : '';
+    let badges = '';
+    if (a.name === topName && a.overallPct > 0) badges += '<span class="cbadge top">🏆 Top</span>';
+    const lowN = series.filter(s => s.pct < cfg().warnAt).length;
+    if (lowN >= 2) badges += '<span class="cbadge repeat">⚠ Below ' + cfg().warnAt + '% ×' + lowN + '</span>';
+
+    const chips = '<div class="days-chip"><span>' + a.days + ' day' + (a.days === 1 ? '' : 's') + ' worked</span><span>' + a.itPerDay.toFixed(1) + 'h IT / day</span><span>' + rn(a.unitsPerDay) + ' units / day</span>' +
+                  (a.reports > 1 ? '<span>' + a.reports + ' reports</span>' : '') + '</div>';
+
+    const totalHrs = a.itDec + a.nonITHrs;
+    const realPct = Math.round(a.itPct);
+    const cap = totalHrs > a.itTarget && a.itTarget > 0 ? a.itTarget / totalHrs : 1;
+    const itW = a.itTarget > 0 ? a.itDec / a.itTarget * 100 * cap : 0, nonW = a.itTarget > 0 ? a.nonITHrs / a.itTarget * 100 * cap : 0;
+    const nonBadge = a.nonITHrs > 0 ? '<span class="nonit-badge">+' + fmtH(a.nonITHrs) + ' Non-IT</span>' : '';
+    const bar = '<div class="graphic-box"><div class="prog-header"><span class="prog-label">IT Compliance' + nonBadge + '</span><span class="prog-val">' + realPct + '%</span></div>' +
+      '<div class="prog-track"><div class="prog-bar ' + (realPct >= 100 ? 'complete' : '') + '" style="width:' + itW + '%;border-radius:' + (nonW > 0 ? '50px 0 0 50px' : '50px') + '"></div>' +
+      (nonW > 0 ? '<div class="prog-bar-nonit" style="width:' + nonW + '%"></div>' : '') + '</div>' +
+      '<div class="it-label"><span>' + fmtH(a.itDec) + ' IT' + (a.nonITHrs > 0 ? ' + ' + fmtH(a.nonITHrs) + ' Non-IT' : '') + '</span><span>Goal: ' + rn(a.itTarget) + 'h (' + a.days + '×' + cfg().itGoal + 'h)</span></div></div>';
+
+    return '<div class="card' + (a.isSup ? ' sup-card' : '') + '" onclick="this.classList.toggle(\'pinned\')">' +
+      '<div class="tt-container"><div class="tt-header">' + esc(a.name) + '</div><div class="tt-info-grid">' +
+        '<div class="info-row"><span>Role on report:</span> <span>' + esc(a.csvRole && a.csvRole !== '-' ? a.csvRole : '—') + '</span></div>' +
+        '<div class="info-row"><span>Joined:</span> <span>' + esc(a.doj) + '</span></div>' +
+        '<div class="info-row"><span>Days worked:</span> <span>' + a.days + '</span></div>' +
+        (a.isSup ? '<div class="info-row"><span>Team totals:</span> <span>Not included (supervisor)</span></div>' : '') +
+      '</div>' + ttRows + '</div>' +
+      '<div class="name"><span>' + esc(a.name) + '</span><span class="name-role">' + esc(a.role) + '</span></div>' +
+      spark + (badges ? '<div class="card-badges">' + badges + '</div>' : '') + chips + pHtml + overallBoxHTML(a) + bar + '</div>';
+  }
+
+  function teamBlockHTML(st, label) {
+    let rows = '';
+    const keys = PROC_ORDER.concat(Object.keys(st.procs).filter(k => PROC_ORDER.indexOf(k) < 0));
+    keys.forEach(k => {
+      const s = st.procs[k]; if (!s || (s.a === 0 && s.b === 0)) return;
+      const pct = s.b > 0 ? s.a / s.b * 100 : 0;
+      rows += '<tr><td>' + esc(k === 'Packing' ? 'Packing (S+M)' : k) + '</td><td>' + rn(s.a) + '</td><td>' + rn(s.b) + '</td><td class="' + colorClass(pct) + '">' + Math.round(pct) + '%</td></tr>';
+    });
+    const tot = st.itD + st.nonIT, pct = Math.round(st.itPct);
+    const cap = tot > st.itB && st.itB > 0 ? st.itB / tot : 1;
+    const itW = st.itB > 0 ? st.itD / st.itB * 100 * cap : 0, nonW = st.itB > 0 ? st.nonIT / st.itB * 100 * cap : 0;
+    return '<div class="team"><div class="sup-data-row"><span class="sup-data-label">' + label + '</span><span class="badge-staff">' + st.count + '</span></div>' +
+      '<table class="team-table"><thead><tr><th>Process</th><th>Actual</th><th>Target</th><th>%</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" style="text-align:left;color:var(--text-muted)">No output recorded</td></tr>') + '</tbody></table>' +
+      '<div class="graphic-box"><div class="prog-header"><span class="prog-label">Team IT Goal</span><span class="prog-val">' + pct + '%</span></div>' +
+      '<div class="prog-track"><div class="prog-bar ' + (pct >= 100 ? 'complete' : '') + '" style="width:' + itW + '%;border-radius:' + (nonW > 0 ? '50px 0 0 50px' : '50px') + '"></div>' + (nonW > 0 ? '<div class="prog-bar-nonit" style="width:' + nonW + '%"></div>' : '') + '</div>' +
+      '<div class="it-label"><span>' + rn(st.itD) + 'h IT' + (st.nonIT > 0 ? ' + ' + fmtH(st.nonIT) + ' Non-IT' : '') + ' completed</span><span>Goal: ' + rn(st.itB) + 'h</span></div></div></div>';
+  }
+
+  // Month-over-month table (always by month rollup, whatever tab is open)
+  function momTableHTML() {
+    const gs = monthGroups(); const c = cfg();
+    if (!gs.length) return '';
+    const names = [c.sup].concat(c.roster);
+    const head = '<tr><th>Associate</th>' + gs.map(g => '<th>' + esc(g.label) + '<span class="mom-sub">' + g.used.length + ' report' + (g.used.length === 1 ? '' : 's') + '</span></th>').join('') + '</tr>';
+    let body = '';
+    names.forEach((n, idx) => {
+      let prev = null;
+      body += '<tr><td>' + esc(n) + (idx === 0 ? ' <span class="mom-sub" style="display:inline">(Sup)</span>' : '') + '</td>' + gs.map(g => {
+        const p = mergePeople(g.used)[norm(n)];
+        if (!p) { prev = null; return '<td><span class="mom-sub">—</span></td>'; }
+        const a = computePerson(p, idx === 0);
+        const d = prev != null ? Math.round(a.overallPct - prev) : null; prev = a.overallPct;
+        const dH = d == null ? '' : '<span class="mom-delta ' + (d > 2 ? 'trend-up' : d < -2 ? 'trend-down' : 'trend-flat') + '">' + (d > 0 ? '+' : '') + d + '</span>';
+        return '<td><span class="mom-pct ' + colorClass(a.overallPct) + '">' + Math.round(a.overallPct) + '%</span>' + dH +
+               '<span class="mom-sub">' + a.days + 'd · ' + a.itPerDay.toFixed(1) + 'h IT/day · IT ' + Math.round(a.itPct) + '%</span></td>';
+      }).join('') + '</tr>';
+    });
+    body += '<tr class="team-row"><td>Team (excl. supervisor)</td>' + gs.map(g => {
+      const st = teamStats(buildView('M:' + g.mk).list);
+      return '<td><span class="mom-pct ' + colorClass(st.overall) + '">' + Math.round(st.overall) + '%</span><span class="mom-sub">' + st.days + ' person-days · IT ' + Math.round(st.itPct) + '%</span></td>';
+    }).join('') + '</tr>';
+    return '<table class="mom-table"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+  }
+
+  function renderTabs() {
+    const gs = monthGroups();
+    let h = gs.map(g => {
+      const st = teamStats(buildView('M:' + g.mk).list);
+      return '<button class="day-tab' + (activeKey === 'M:' + g.mk ? ' active' : '') + '" onclick="switchTo(\'M:' + g.mk + '\')">' + esc(g.label) +
+             '<span class="day-tab-sub">' + Math.round(st.overall) + '%</span></button>';
+    }).join('');
+    if (gs.length > 1) h += '<button class="day-tab month-tab-all' + (activeKey === 'ALL' ? ' active' : '') + '" onclick="switchTo(\'ALL\')">📊 All</button>';
+    document.getElementById('month-tabs').innerHTML = h;
+
+    // Second row: the individual uploaded reports for the month in view
+    const rs = reportsSorted();
+    let mk = null;
+    if (activeKey && activeKey.slice(0, 2) === 'M:') mk = activeKey.slice(2);
+    else if (activeKey && activeKey.slice(0, 2) === 'R:') { const r = state.reports.find(x => x.key === activeKey.slice(2)); mk = r ? r.month : null; }
+    const row = document.getElementById('report-row');
+    const shown = mk ? rs.filter(r => r.month === mk) : rs;
+    if (activeKey === 'ALL' || shown.length < 2) { row.style.display = 'none'; document.getElementById('report-tabs').innerHTML = ''; return; }
+    row.style.display = 'flex';
+    const g = mk ? groupFor(mk) : null;
+    document.getElementById('report-tabs').innerHTML = shown.map(r => {
+      const st = teamStats(buildView('R:' + r.key).list);
+      const dup = g && g.skipped.indexOf(r) >= 0;
+      return '<button class="day-tab' + (activeKey === 'R:' + r.key ? ' active' : '') + '" title="' + esc(r.range) + (dup ? ' — overlaps a longer report, so it is left out of the month total' : '') + '" onclick="switchTo(\'R:' + r.key + '\')">' +
+        esc(r.label) + (dup ? ' ⓘ' : '') + '<span class="day-tab-sub">' + Math.round(st.overall) + '%</span>' +
+        '<span class="day-tab-remove tab-x" title="Remove this report" onclick="event.stopPropagation();removeReport(\'' + r.key + '\')">×</span></button>';
+    }).join('');
+  }
+
+  function render() {
+    const c = cfg();
+    const gs = monthGroups();
+    const out = document.getElementById('dash-inner');
+    if (!state.reports.length) {
+      renderTabs();
+      document.getElementById('bench-bar').innerHTML = ''; document.getElementById('global-summary').innerHTML = ''; document.getElementById('insights').innerHTML = '';
+      out.innerHTML = '<div class="empty-state"><h2>No reports loaded</h2><p>Upload a WH Reporting CSV — a week or a whole month — to build the weekend crew view.</p><button class="action-btn accent" onclick="document.getElementById(\'file-input\').click()">＋ Add CSV</button></div>';
+      return;
+    }
+    const validKeys = ['ALL'].concat(gs.map(g => 'M:' + g.mk), state.reports.map(r => 'R:' + r.key));
+    if (!activeKey || validKeys.indexOf(activeKey) < 0) activeKey = 'M:' + gs[gs.length - 1].mk;
+    renderTabs();
+
+    const view = buildView(activeKey);
+    const st = teamStats(view.list);
+    const title = titleFor(activeKey);
+    document.getElementById('main-header').textContent = 'Mississauga Weekend Crew — ' + title;
+    document.title = 'Weekend Crew — ' + title;
+
+    const rs = view.reports.slice().sort((a, b) => a.fromISO.localeCompare(b.fromISO));
+    const period = rs.length ? dayShort(rs[0].fromISO) + ' → ' + dayShort(rs[rs.length - 1].toISO) + (rs.length > 1 ? ' (' + rs.length + ' reports)' : '') : '—';
+    document.getElementById('bench-bar').innerHTML =
+      '<div>Period: <span>' + esc(period) + '</span></div>' +
+      '<div>Picking: <span>' + c.pick + ' / hr</span></div><div>Stowing: <span>' + c.stow + ' / hr</span></div>' +
+      '<div>Packing S: <span>' + c.packS + ' / hr</span></div><div>Packing M: <span>' + c.packM + ' / hr</span></div>' +
+      '<div>Packing (L): <span>' + c.packL + ' / hr</span></div><div>Docker: <span>' + c.docker + ' / hr</span></div>' +
+      '<div>IT Goal: <span>' + c.itGoal + ' hrs / day worked</span></div>';
+
+    const avgItDay = st.days > 0 ? st.itD / st.days : 0;
+    document.getElementById('global-summary').innerHTML =
+      '<div class="global-metric"><div class="lbl">Team Overall</div><div class="val ' + colorClass(st.overall) + '">' + Math.round(st.overall) + '%</div><div class="sub">' + rn(st.act) + ' ÷ ' + rn(st.ben) + '</div></div>' +
+      '<div class="global-metric"><div class="lbl">IT Compliance</div><div class="val ' + colorClass(st.itPct) + '">' + Math.round(st.itPct) + '%</div><div class="sub">' + rn(st.itD + st.nonIT) + 'h of ' + rn(st.itB) + 'h</div></div>' +
+      '<div class="global-metric"><div class="lbl">Avg IT / Day</div><div class="val" style="color:' + ragHex(avgItDay / c.itGoal * 100) + '">' + avgItDay.toFixed(1) + 'h</div><div class="sub">goal ' + c.itGoal + 'h</div></div>' +
+      '<div class="global-metric"><div class="lbl">Days Worked</div><div class="val">' + st.days + '</div><div class="sub">' + st.count + ' of ' + view.list.length + ' associates</div></div>';
+
+    document.getElementById('insights').innerHTML = gs.length ?
+      '<div class="panel"><div class="panel-head" onclick="this.parentNode.classList.toggle(\'collapsed\')"><h3>📈 Month-over-Month</h3><span class="chev">▼</span></div><div class="panel-body" style="overflow-x:auto">' + momTableHTML() + '</div></div>' : '';
+
+    const q = (document.getElementById('search-input').value || '').toLowerCase();
+    const sort = document.getElementById('sort-select').value;
+    let topName = '', tp = -1;
+    view.list.forEach(a => { if (!a.absent && a.tBen > 0 && a.overallPct > tp) { tp = a.overallPct; topName = a.name; } });
+    let list = view.list.slice();
+    if (sort !== 'default') {
+      const val = a => a.absent ? null : (sort === 'it-low' ? a.itPct : a.overallPct);
+      list.sort((x, y) => { const vx = val(x), vy = val(y); if (vx == null) return 1; if (vy == null) return -1; return sort === 'perf-high' ? vy - vx : vx - vy; });
+    }
+    const cards = [];
+    if (view.sup && (!q || view.sup.name.toLowerCase().includes(q))) cards.push(cardHTML(view.sup, ''));
+    list.forEach(a => { if (!q || a.name.toLowerCase().includes(q)) cards.push(cardHTML(a, topName)); });
+
+    const supTeam = view.sup ? teamStats([view.sup]) : null;
+    out.innerHTML = '<div class="col weekend">' +
+      '<div class="sup">Weekend Crew — ' + esc(c.sup) + '<span class="sup-sub">Supervisor · ' + esc(title) + '</span></div>' +
+      '<div class="team-wrap">' + teamBlockHTML(st, 'Weekend Associates Present') +
+        (supTeam ? teamBlockHTML(supTeam, 'Supervisor Own Output (not in team totals)') : '<div class="team"><div class="sup-data-row"><span class="sup-data-label">Supervisor Own Output</span><span class="badge-staff">0</span></div><div class="absent-msg">' + esc(c.sup) + ' has no hours in this period.</div></div>') +
+      '</div>' +
+      '<div class="card-grid">' + (cards.join('') || '<div class="absent-msg">No associates match your search.</div>') + '</div></div>';
+  }
+
+  function switchTo(k) { activeKey = k; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  let lastRemoved = null;
+  function removeReport(k) {
+    const r = state.reports.find(x => x.key === k); if (!r) return;
+    state.reports = state.reports.filter(x => x.key !== k); lastRemoved = r;
+    if (activeKey === 'R:' + k) activeKey = null;
+    save(); render();
+    showDQ('Removed ' + esc(r.label) + ' (' + esc(r.range) + '). <a href="#" onclick="undoRemove();return false" style="color:inherit;font-weight:900">Undo</a>', false);
+  }
+  function undoRemove() { if (!lastRemoved) return; state.reports.push(lastRemoved); activeKey = 'R:' + lastRemoved.key; lastRemoved = null; save(); hideDQ(); render(); }
+
+  function showDQ(html, warn) { const b = document.getElementById('dq-bar'); b.className = 'dq-bar no-print' + (warn ? ' warn' : ''); b.innerHTML = '<span>' + html + '</span><span class="dq-x" onclick="hideDQ()">×</span>'; b.style.display = 'flex'; }
+  function hideDQ() { document.getElementById('dq-bar').style.display = 'none'; }
+  function save() { state.savedAt = Date.now(); lsSet(); }
+
+  function handleUpload(ev) {
+    const f = ev.target.files && ev.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = e => {
+      try {
+        const res = filterReport(e.target.result, f.name);
+        const rep = normalizeReport({ from: res.period.from, to: res.period.to, csv: res.csv, file: f.name });
+        const existed = state.reports.some(x => x.key === rep.key);
+        state.reports = state.reports.filter(x => x.key !== rep.key);
+        state.reports.push(rep);
+        activeKey = 'R:' + rep.key; save(); render();
+        const c = cfg(); const foundN = new Set(res.found.map(norm));
+        const missing = [c.sup].concat(c.roster).filter(n => !foundN.has(norm(n)));
+        const g = groupFor(rep.month);
+        const dup = g && g.skipped.indexOf(rep) >= 0;
+        showDQ((existed ? 'Replaced ' : 'Added ') + esc(rep.label) + ' (' + esc(rep.range) + ') — ' + res.found.length + ' of ' + (c.roster.length + 1) + ' weekend names found.' +
+               (missing.length ? ' Not on report: ' + esc(missing.join(', ')) + '.' : '') +
+               (dup ? ' It overlaps a longer report for ' + esc(g.label) + ', so the month total still uses the longer one.' : '') +
+               ' Use ⬇ Download Dashboard to save a copy with this report built in.', missing.length > 0 || dup);
+      } catch (err) { showDQ('Could not read ' + esc(f.name) + ': ' + esc(err.message), true); }
+      ev.target.value = '';
+    };
+    rd.readAsText(f);
+  }
+
+  // ─────────────── Settings ───────────────
+  function openSettings() {
+    const c = cfg();
+    document.getElementById('s-sup').value = c.sup; document.getElementById('s-roster').value = c.roster.join('\n');
+    ['pick', 'stow', 'packS', 'packM', 'packL', 'docker'].forEach(k => document.getElementById('s-' + k).value = c[k]);
+    document.getElementById('s-it').value = c.itGoal; document.getElementById('s-good').value = c.goodAt; document.getElementById('s-warn').value = c.warnAt;
+    document.getElementById('settings-modal').classList.add('show');
+  }
+  function saveSettings() {
+    const num = (id, d) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? d : v; };
+    const c = cfg();
+    state.settings = {
+      sup: document.getElementById('s-sup').value.trim() || c.sup,
+      roster: document.getElementById('s-roster').value.split('\n').map(s => s.replace(/_/g, ' ').trim()).filter(Boolean),
+      pick: num('s-pick', c.pick), stow: num('s-stow', c.stow), packS: num('s-packS', c.packS), packM: num('s-packM', c.packM),
+      packL: num('s-packL', c.packL), docker: num('s-docker', c.docker), itGoal: num('s-it', c.itGoal), goodAt: num('s-good', c.goodAt), warnAt: num('s-warn', c.warnAt)
+    };
+    save(); closeModal('settings-modal'); render();
+  }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  // ─────────────── Summary / exports ───────────────
+  function summaryText() {
+    if (!state.reports.length) return '';
+    const view = buildView(activeKey); const st = teamStats(view.list); const c = cfg();
+    const rs = view.reports.slice().sort((a, b) => a.fromISO.localeCompare(b.fromISO));
+    const L = [];
+    L.push('WEEKEND CREW — ' + titleFor(activeKey).toUpperCase());
+    if (rs.length) L.push('Period: ' + dayShort(rs[0].fromISO) + ' – ' + dayShort(rs[rs.length - 1].toISO));
+    L.push('Supervisor: ' + c.sup);
+    L.push('');
+    L.push('Team overall: ' + Math.round(st.overall) + '%  (' + rn(st.act) + ' / ' + rn(st.ben) + ')');
+    L.push('IT compliance: ' + Math.round(st.itPct) + '%  (' + rn(st.itD + st.nonIT) + 'h of ' + rn(st.itB) + 'h, ' + st.days + ' person-days)');
+    L.push('');
+    (view.sup ? [view.sup] : []).concat(view.list).forEach(a => {
+      if (a.absent) { L.push('• ' + a.name + ' — no hours in this period'); return; }
+      const procs = Object.keys(a.procs).map(p => { const d = a.procs[p]; const pc = p === 'Packing' && d.wpi != null ? d.wpi : (d.ben > 0 ? d.act / d.ben * 100 : 0); return (p === 'Packing' ? 'Pack S+M' : p) + ' ' + Math.round(pc) + '%'; }).join(', ');
+      L.push('• ' + a.name + (a.isSup ? ' (Sup)' : '') + ' — ' + Math.round(a.overallPct) + '% overall | ' + a.days + ' days | ' + a.itPerDay.toFixed(1) + 'h IT/day (IT ' + Math.round(a.itPct) + '%)');
+      if (procs) L.push('    ' + procs);
+    });
+    return L.join('\n');
+  }
+  function openSummary() { document.getElementById('summary-text').value = summaryText(); document.getElementById('summary-modal').classList.add('show'); }
+  function copySummary() {
+    const t = document.getElementById('summary-text'), btn = document.getElementById('copy-btn');
+    const ok = () => { const o = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = o, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t.value).then(ok, () => { t.select(); document.execCommand('copy'); ok(); });
+    else { t.select(); document.execCommand('copy'); ok(); }
+  }
+  function downloadBlob(content, name, type) {
+    const b = new Blob([content], { type: type }), u = URL.createObjectURL(b), a = document.createElement('a');
+    a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000);
+  }
+  function downloadCSV() {
+    const view = buildView(activeKey);
+    const rows = [['Period', 'Name', 'Role', 'Days Worked', 'IT Hours', 'Non-IT Hours', 'IT Goal (h)', 'IT Compliance %', 'IT h/day', 'Actual Units', 'Expected Units', 'Overall %']];
+    const lbl = titleFor(activeKey);
+    (view.sup ? [view.sup] : []).concat(view.list).forEach(a => {
+      if (a.absent) { rows.push([lbl, a.name, '', 0, '', '', '', '', '', '', '', '']); return; }
+      rows.push([lbl, a.name, a.role, a.days, a.itDec.toFixed(2), a.nonITHrs.toFixed(2), a.itTarget.toFixed(1), Math.round(a.itPct), a.itPerDay.toFixed(2), Math.round(a.tAct), Math.round(a.tBen), Math.round(a.overallPct)]);
+    });
+    downloadBlob(rows.map(r => r.map(csvCell).join(',')).join('\n'), 'Weekend_Crew_' + lbl.replace(/[^\w]+/g, '_') + '.csv', 'text/csv');
+  }
+  function downloadHTML() {
+    const data = JSON.stringify({ reports: state.reports.map(stripReport), settings: state.settings, savedAt: Date.now() }).replace(/</g, '\\u003c');
+    const html = PAGE_SRC.replace(/(<script id="wk-data" type="application\/json">)[\s\S]*?(<\/script>)/, (m0, a, b) => a + data + b);
+    downloadBlob(html, 'index.html', 'text/html');
+  }
+
+  // ─────────────── Theme ───────────────
+  function applyTheme(mode) {
+    document.body.classList.toggle('dark', mode === 'dark');
+    document.getElementById('theme-toggle').textContent = mode === 'dark' ? '☀️ Light' : '🌙 Dark';
+    try { localStorage.setItem('wh_theme', mode); } catch (e) {}
+  }
+  function toggleTheme() { applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'); }
+
+  // ─────────────── Boot ───────────────
+  (function init() {
+    let emb = {};
+    try { emb = JSON.parse(document.getElementById('wk-data').textContent || '{}'); } catch (e) {}
+    state.reports = (emb.reports || []);
+    state.settings = Object.assign({}, DEFAULT_SETTINGS, emb.settings || {});
+    state.savedAt = emb.savedAt || 0;
+    const ls = lsGet();
+    if (ls && ls.savedAt > state.savedAt && Array.isArray(ls.reports)) {
+      state.reports = ls.reports; state.settings = Object.assign({}, DEFAULT_SETTINGS, ls.settings || {}); state.savedAt = ls.savedAt;
+    }
+    state.reports = state.reports.map(normalizeReport);
+    let th = 'light'; try { th = localStorage.getItem('wh_theme') || 'light'; } catch (e) {}
+    applyTheme(th);
+    render();
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('summary-modal'); closeModal('settings-modal'); } });
+  })();
+</script>
+</body>
+</html>
